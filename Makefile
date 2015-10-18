@@ -51,7 +51,7 @@ $(SHARED):
 	$(QUIET_CXX)$(CXX) $(SHARED_LDFLAGS) -o $@ $(LIBOBJECTS) $(LIBS)
 
 $(TARGETS): $(OBJECTS)
-	$(QUIET_LINK)$(CXX) -DNDEBUG -o $@ $(addsuffix .o, $@) $(LIBS) -L. -ldbpool
+	$(QUIET_LINK)$(CXX) -DNDEBUG -o $@ $(addsuffix .o, $@) $(LIBS) -L. -lsocketpool
 
 #下面的Makefile其实只是为了使用安静模式而已,如果将下面的代码去掉的话也能编译成功,因为默认的make规则将被执行
 ./util/%.o:./util/%.c
