@@ -7,6 +7,7 @@
 #ifndef SOCKETPOOL_INCLUDE_SOCKET_OBJ_H
 #define SOCKETPOOL_INCLUDE_SOCKET_OBJ_H
 
+#include <boost/shared_ptr.hpp>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -14,10 +15,10 @@
 class SocketObj {
  public:
   SocketObj();
-  virtual ~MysqlObj();
+  virtual ~SocketObj();
  private:
 
-}
+};
 
 
 // 使用shared_ptr来替换SocketObj*
