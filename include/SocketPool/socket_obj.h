@@ -12,6 +12,18 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include <event2/event.h>
+#include <event2/bufferevent.h>
+#include <event2/buffer.h>
+
+#ifdef __cplusplus
+}
+#endif
+
 class SocketObj {
  public:
   SocketObj();
