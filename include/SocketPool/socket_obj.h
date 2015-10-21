@@ -18,7 +18,8 @@ typedef boost::shared_ptr<SocketObj>SocketObjPtr;
 
 class SocketObj {
  public:
-  SocketObj();
+  explicit SocketObj();
+  explicit SocketObj(int sockFD);
   virtual ~SocketObj();
   void Dump() const;
 
