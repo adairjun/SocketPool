@@ -14,6 +14,9 @@ class SocketPool {
   SocketPool();
   virtual SocketPool();
   SocketPool(const SocketPool&) = delete;
+  SocketPool& operator=(const SocketPool&) = delete;
+
+ private:
 
 };
 
@@ -23,5 +26,5 @@ class SocketPool {
 
 
 
-
+typedef boost::shared_ptr<SocketPool> SocketPoolPtr;
 #endif /* SOCKETPOOL_INCLUD _SOCKET_CONNECTION_POOL_H */
