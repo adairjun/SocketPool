@@ -18,7 +18,8 @@ typedef boost::shared_ptr<SocketObj>SocketObjPtr;
 
 class SocketObj {
  public:
-  explicit SocketObj();
+  // 虽然作为client的话.backlog用不到,但是这里还是要写入构造函数当中
+  explicit SocketObj(string host, unsigned port, int backlog);
   explicit SocketObj(int sockFD);
   virtual ~SocketObj();
   void Dump() const;
@@ -45,20 +46,20 @@ class SocketObj {
 
   //获取套接字
   int Get() const {
-    return m_sockFD;
+    return sockFD_;
   }
 
  private:
   // 通过socket函数构建的套接字
-  int m_sockFD;
+  int sockFD_;
  
-  struct sockaddr_in m_sAddr; 
-  string m_strHost;
-  unsigned m_iPort;
+  struct sockaddr_in sAddr_; 
+  string strHost_;
+  unsigned iPort_;
   
-  //用于listen函数的backlog,决定内核为socket排队的最大连接个数
+  //用于listen函数的backlog_,决定内核为socket排队的最大连接个数
   //从配置文件当中读取
-  int backlog;
+  int backlog_;
 };
 
 #endif /* SOCKETPOOL_INCLUDE_SOCKET_OBJ_H */

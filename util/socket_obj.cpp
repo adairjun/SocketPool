@@ -7,13 +7,14 @@
 #include <unistd.h>
 
 SocketObj::SocketObj(string host, unsigned port)
-    : m_strHost(host),
-      m_iPort(port) {
-    m_sockFD = -1;
+    : strHost_(host),
+      iPort_(port),
+      backlog_(backlog) {
+    sockFD_ = -1;
 } 
 
 SocketObj::SocketObj(int sockFD)
-    : m_sockFD(sockFD) {
+    : sockFD_(sockFD) {
 }
 
 SocketObj::~SocketObj() {
@@ -21,19 +22,19 @@ SocketObj::~SocketObj() {
 }
 
 void SocketObj::Dump() const {
-  printf("m_sockFD=%d", m_sockFD);
+  printf("sockFD_=%d", sockFD_);
 }
 
 unsigned SocketObj::TranslateAddress() {
-  if (m_strHost == "")
+  if (strHost_ == "")
     return INADDR_ANY; 
   
   // 建立一个临时的socket
   int tmpSockFD = socket(AF_INET, SOCK_DGRAM, 0);
   // ifreq这个结构体的用处用来配置ip地址,激活接口,配置MTU等信息的
   struct ifreq sIfReq;
-  strcpy(sIfReq.ifr_name, m_strHost.c_str() + 1);
-  strcpy(sIfReq.ifr_name, m_strHost.c_str() + 1);
+  strcpy(sIfReq.ifr_name, strHost_.c_str() + 1);
+  strcpy(sIfReq.ifr_name, strHost_.c_str() + 1);
   if (0 != ioctl(tmpSockFD, SIOCGIFADDR, &sIfReq, sizeof(sIfReq))) {
     close(tmpSockFD); 
 	return INADDR_NONE;
@@ -45,16 +46,16 @@ unsigned SocketObj::TranslateAddress() {
 
 int SocketObj::Bind() {
   Close();
-  m_sockFD = socket(AF_INET, SOCK_STREAM, 0);
-  if (m_sockFD == -1) {
+  sockFD_ = socket(AF_INET, SOCK_STREAM, 0);
+  if (sockFD_ == -1) {
     return -1;
   }
   
-  memset(&m_sAddr, 0, sizeof(m_sAddr));
-  m_sAddr.sin_addr.s_addr = TranslateAddress();
-  m_sAddr.sin_family = AF_INET;
-  m_sAddr.sin_port = htons(m_iPort);
-  return bind(m_sockFD, (struct sockaddr*)&m_sAddr, sizeof(m_sAddr)); 
+  memset(&sAddr_, 0, sizeof(sAddr_));
+  sAddr_.sin_addr.s_addr = TranslateAddress();
+  sAddr_.sin_family = AF_INET;
+  sAddr_.sin_port = htons(iPort_);
+  return bind(sockFD_, (struct sockaddr*)&sAddr_, sizeof(sAddr_)); 
 }
 
 int SocketObj::Listen() {
@@ -65,7 +66,7 @@ int SocketObj::Listen() {
     return -1;
   }
 
-  if (listen(m_sockFD, backlog) != 0) {
+  if (listen(sockFD_, backlog_) != 0) {
     Close();
     return -1;
   }
@@ -73,11 +74,11 @@ int SocketObj::Listen() {
 }
 
 SocketObjPtr SocketObj::Accept() {
-  if (m_sockFD == -1) {
+  if (sockFD_ == -1) {
     return NULL;
   }
-  socklen_t length = sizeof(m_sAddr);
-  int customFD = accept(m_sockFD, (struct sockaddr*)&m_sAddrLen, &length) 
+  socklen_t length = sizeof(sAddr_);
+  int customFD = accept(sockFD_, (struct sockaddr*)&sAddr_Len, &length) 
   if (customFD == -1) {
     return NULL;
   }
@@ -87,16 +88,16 @@ SocketObjPtr SocketObj::Accept() {
 
 int SocketObj::Connect() {
   Close();
-  m_sockFD = socket(AF_INET, SOCK_STREAM, 0);
-  if (m_sockFD == -1) {
+  sockFD_ = socket(AF_INET, SOCK_STREAM, 0);
+  if (sockFD_ == -1) {
     return -1;
   }
 
-  memset(&m_sAddr, 0, sizeof(m_sAddr));
-  m_sAddr.sin_addr.s_addr = TranslateAddress(); 
-  m_sAddr.sin_family = AF_INET;
-  m_sAddr.sin_port = htons(m_iPort);
-  if (connect(m_sockFD, (struct sockaddr*)&m_sAddr, sizeof(m_sAddr))!=0) {
+  memset(&sAddr_, 0, sizeof(sAddr_));
+  sAddr_.sin_addr.s_addr = TranslateAddress(); 
+  sAddr_.sin_family = AF_INET;
+  sAddr_.sin_port = htons(iPort_);
+  if (connect(sockFD_, (struct sockaddr*)&sAddr_, sizeof(sAddr_))!=0) {
     Close();
     return -1;
   }
@@ -104,8 +105,8 @@ int SocketObj::Connect() {
 }
 
 int SocketObj::Close() {
-  if (m_sockFD != -1) {
-    close(m_sockFD);
-    m_sockFD = -1;
+  if (sockFD_ != -1) {
+    close(sockFD_);
+    sockFD_ = -1;
   }
 }
