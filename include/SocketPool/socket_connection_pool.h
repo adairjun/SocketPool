@@ -7,7 +7,15 @@
 #define SOCKETPOOL_INCLUDE _SOCKET_CONNECTION_POOL_H
 
 #include "socket_obj.h"
+#include <list>
 
+class SocketPool {
+ public:
+  SocketPool();
+  virtual SocketPool();
+  SocketPool(const SocketPool&) = delete;
+
+};
 
 
 
