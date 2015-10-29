@@ -11,10 +11,13 @@ SocketObj::SocketObj(string host, unsigned port, int backlog)
     : strHost_(host),
       iPort_(port),
       backlog_(backlog) {
+    LOG(INFO) << "consutor function HOST:[" << host << "]" 
+              << " PORT:[" << port << "]" 
+              << " BACKLOG:[" << backlog << "]";
     sockFD_ = -1;
-    psAddr_->sin_family = AF_INET;
-    psAddr_->sin_port = htons(iPort_);
-    psAddr_->sin_addr.s_addr = INADDR_ANY;
+    //psAddr_->sin_family = AF_INET;
+    //psAddr_->sin_port = htons(iPort_);
+    //psAddr_->sin_addr.s_addr = INADDR_ANY;
 } 
 
 SocketObj::SocketObj(int sockFD)
@@ -57,7 +60,7 @@ int SocketObj::Bind() {
     return -1;
   }
   
-  memset(psAddr_, 0, sizeof(*psAddr_));
+  //memset(psAddr_, 0, sizeof(*psAddr_));
   psAddr_->sin_addr.s_addr = TranslateAddress();
   psAddr_->sin_family = AF_INET;
   psAddr_->sin_port = htons(iPort_);
@@ -66,7 +69,6 @@ int SocketObj::Bind() {
 
 int SocketObj::Listen() {
   Close();
-  Bind();
   if (Bind() != 0) {
     Close();
     return -1;
@@ -102,7 +104,7 @@ int SocketObj::Connect() {
     return -1;
   }
 
-  memset(psAddr_, 0, sizeof(*psAddr_));
+  //memset(psAddr_, 0, sizeof(*psAddr_));
   psAddr_->sin_addr.s_addr = TranslateAddress(); 
   psAddr_->sin_family = AF_INET;
   psAddr_->sin_port = htons(iPort_);

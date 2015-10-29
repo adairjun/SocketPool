@@ -2,7 +2,7 @@
 SocketPool
 ======
 
-make sure there is libevent, gtest, theron in your system
+make sure there is libevent, gtest, theron, glog in your system
 ======
 
 使用make来生成socket连接池的静态库libsocketpool.a和动态库libsocketpool.so

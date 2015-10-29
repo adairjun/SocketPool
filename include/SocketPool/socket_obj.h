@@ -8,6 +8,7 @@
 
 #include <string>
 #include <boost/shared_ptr.hpp>
+#include <glog/logging.h>
 
 using std::string;
 

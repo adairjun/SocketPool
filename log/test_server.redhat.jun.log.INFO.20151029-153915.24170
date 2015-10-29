@@ -1,0 +1,4 @@
+Log file created at: 2015/10/29 15:39:15
+Running on machine: redhat
+Log line format: [IWEF]mmdd hh:mm:ss.uuuuuu threadid file:line] msg
+I1029 15:39:15.323087 24170 socket_obj.cpp:14] consutor function HOST:[127.0.0.1] PORT:[9999] BACKLOG:[10]
