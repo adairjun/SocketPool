@@ -12,7 +12,7 @@
 class SocketPool {
  public:
   SocketPool();
-  virtual SocketPool();
+  virtual ~SocketPool();
   SocketPool(const SocketPool&) = delete;
   SocketPool& operator=(const SocketPool&) = delete;
 

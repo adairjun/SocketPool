@@ -53,7 +53,7 @@ class SocketObj {
   // 通过socket函数构建的套接字
   int sockFD_;
  
-  struct sockaddr_in sAddr_; 
+  struct sockaddr_in* psAddr_; 
   string strHost_;
   unsigned iPort_;
   
