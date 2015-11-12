@@ -7,10 +7,13 @@
 #define SOCKETPOOL_INCLUDE_SOCKET_OBJ_H
 
 #include <string>
+#include <utility>
 #include <boost/shared_ptr.hpp>
 #include <glog/logging.h>
 
 using std::string;
+using std::pair;
+using std::make_pair;
 
 class SocketObj;
 
@@ -24,6 +27,9 @@ class SocketObj {
   explicit SocketObj(int sockFD);
   virtual ~SocketObj();
   void Dump() const;
+  
+  //设置套接字的阻塞模式,nonblock为true时是非阻塞模式
+  int SetNonBlock(bool nonblock); 
 
   // 由于sockaddr_in.sin_addr.s_addr类型是unsigned类型
   // 这个函数的作用就是把ip地址转换成s_addr能接受的类型
@@ -49,8 +55,20 @@ class SocketObj {
   int Get() const {
     return sockFD_;
   }
+ 
+  //封装的getpeername函数,返回远端地址和端口的map
+  pair<string, int> GetPeer();
+
+  //封装的getsockname函数,返回本地地址和端口的map
+  pair<string, int> GetSock();
 
  private:
+  typedef struct {
+    time_t timeout;         //超时值
+    string strHead;         //消息头 
+    string strData;         //消息的数据
+  } msg_;
+
   // 通过socket函数构建的套接字
   int sockFD_;
  

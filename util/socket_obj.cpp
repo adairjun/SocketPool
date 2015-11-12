@@ -3,8 +3,10 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <net/if.h>
+#include <netdb.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <string.h>
 
 SocketObj::SocketObj(string host, unsigned port, int backlog)
@@ -29,10 +31,29 @@ void SocketObj::Dump() const {
   printf("sockFD_=%d", sockFD_);
 }
 
+int SocketObj::SetNonBlock(bool nonblock) {
+  int flag = fcntl(sockFD_, F_GETFL, 0);
+  if (nonblock) {
+    // 设置成非阻塞模式
+    return fcntl(sockFD_, F_SETFL, flag | O_NONBLOCK);
+  } else {
+    //设置为阻塞模式
+    return fcntl(sockFD_, F_SETFL, flag & ~O_NONBLOCK);
+  }
+}
+
+
 unsigned SocketObj::TranslateAddress() {
   if (strHost_ == "")
     return INADDR_ANY; 
-  return inet_addr(strHost_.c_str());
+  //return inet_addr(strHost_.c_str());
+  //使用gethostbyname比使用inet_addr更好,从函数名上看比较清晰
+  //而且还能根据域名来使用
+  struct hostent *pstrHost_ = gethostbyname(strHost_.c_str());
+  if (pstrHost_ == NULL) {
+     return inet_addr(strHost_.c_str());
+  }
+  return *(int*)(pstrHost_->h_addr);
 }
 
 int SocketObj::Bind() {
@@ -103,4 +124,32 @@ int SocketObj::Close() {
     close(sockFD_);
     sockFD_ = -1;
   }
+}
+
+pair<string, int> SocketObj::GetPeer() {
+  if (sockFD_ == -1) {
+    return make_pair("", 0);
+  }
+  struct sockaddr_in sAddr;
+  socklen_t length = sizeof(sAddr);
+  if(getpeername(sockFD_, (struct sockaddr*)&sAddr, &length) != 0) {
+    return make_pair("", 0);
+  }
+  string ipAddr = inet_ntoa(sAddr.sin_addr);
+  int port = ntohs(sAddr.sin_port);
+  return make_pair(ipAddr, port);
+}
+
+pair<string, int> SocketObj::GetSock() {
+  if (sockFD_ == -1) {
+    return make_pair("", 0);
+  }
+  struct sockaddr_in sAddr;
+  socklen_t length = sizeof(sAddr);
+  if(getsockname(sockFD_, (struct sockaddr*)&sAddr, &length) != 0) {
+    return make_pair("", 0);
+  }
+  string ipAddr = inet_ntoa(sAddr.sin_addr);
+  int port = ntohs(sAddr.sin_port);
+  return make_pair(ipAddr, port);
 }
