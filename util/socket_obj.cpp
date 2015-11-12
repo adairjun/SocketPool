@@ -12,7 +12,7 @@
 SocketObj::SocketObj(string host, unsigned port, int backlog)
     : strHost_(host),
       iPort_(port),
-      backlog_(backlog) {
+      backlog_(backlog) { 
     LOG(INFO) << "consutor function HOST:[" << host << "]" 
               << " PORT:[" << port << "]" 
               << " BACKLOG:[" << backlog << "]";

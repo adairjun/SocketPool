@@ -17,7 +17,7 @@ void str_echo(int sockfd) {
   ssize_t n;
   char buf[MAXLINE]; 
   
-  while((n=read(sockfd, buf, MAXLINE)) > 0) { 
+  while ((n=read(sockfd, buf, MAXLINE)) > 0) { 
     write(sockfd, buf, n);
   }
   if (n<0) {
@@ -33,11 +33,52 @@ int main(int argc, char** argv) {
   if (listener.Listen() != 0) {
     cerr << "Sorry, listen error!" << endl;
   }
-  pid_t childpid;
+  int maxfd = listener.Get();
+  int maxi = -1;
+  //使用智能指针的数组
+  SocketObjPtr client[FD_SETSIZE];
+  fd_set rset, allset;
+  FD_ZERO(&allset);
+  FD_SET(listener.Get(), &allset);
+  int nready;
   while (true) {
-    SocketObjPtr sockPtr = listener.Accept();
-    str_echo(sockPtr->Get());
-    sockPtr->Close(); 
+    rset = allset;
+    nready = select(maxfd+1, &rset, NULL, NULL, NULL);
+    if (FD_ISSET(listener.Get(), &rset)) {
+      SocketObjPtr sockPtr = listener.Accept();
+      int i = 0;
+      for (i = 0; i< FD_SETSIZE; ++i) {
+        if (client[i] == NULL) {
+          client[i] = sockPtr;
+          break;
+        }
+      } 
+      FD_SET(sockPtr->Get(), &allset);
+      maxfd = sockPtr->Get() > maxfd ? sockPtr->Get() : maxfd;
+      maxi = i > maxi ? i : maxi;
+      if (--nready <= 0) { 
+        continue;
+      } 
+    } 
+    for (int i = 0; i<= maxi; ++i) {
+      int sockfd = client[i]->Get();
+      if (sockfd < 0) {
+        continue;
+      }
+      if (FD_ISSET(sockfd, &rset)) {
+        ssize_t n;
+        char buf[MAXLINE];
+        if ((n=read(sockfd, buf, MAXLINE)) == 0) {
+          client[i]->Close();
+          FD_CLR(sockfd, &allset);
+        } else {
+          write(sockfd, buf, n);
+        }
+      }  
+      if (--nready <= 0) {
+        break;
+      }
+    }
   }
   listener.Close();
   return 0;
