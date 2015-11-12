@@ -2,6 +2,12 @@
 #include <gtest/gtest.h>
 #include "SocketPool/socket_obj.h"
 
+#include <string.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+
 using std::cout;
 using std::cerr;
 using std::endl;
@@ -16,13 +22,14 @@ int main(int argc, char** argv) {
   google::InitGoogleLogging(argv[0]);
   FLAGS_log_dir = "../log";  
   SocketObj sock(HOST, PORT, BACKLOG);
-  if (sock.Connect() !=0 ) {
+  if (sock.Connect()<0) {
     cerr << "Connect error" << endl;
   }
   int n;
   char recvline[40];
   while ((n=read(sock.Get(), recvline, 40)) > 0) {
     recvline[n] = 0;
+    LOG(INFO) << "client receive message from server: " << recvline << endl;
     if (fputs(recvline, stdout) == EOF) {
       cerr << "fputs error" << endl;
     }

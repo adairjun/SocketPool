@@ -7,7 +7,8 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
-const string HOST = "127.0.0.1";
+// HOST留空说明设定为INADDR_ANY
+const string HOST = "";
 const unsigned PORT = 9999;
 const int BACKLOG = 10;
 
@@ -22,7 +23,7 @@ int main(int argc, char** argv) {
   }
   while (true) {
     SocketObjPtr sockPtr = listener.Accept();
-    send(sockPtr->Get(), "helloworld", 10, 0);
+    send(sockPtr->Get(), "worldhello", 10, 0);
     sockPtr->Close();
   }
   listener.Close();

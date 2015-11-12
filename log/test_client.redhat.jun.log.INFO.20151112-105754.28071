@@ -1,0 +1,5 @@
+Log file created at: 2015/11/12 10:57:54
+Running on machine: redhat
+Log line format: [IWEF]mmdd hh:mm:ss.uuuuuu threadid file:line] msg
+I1112 10:57:54.618203 28071 socket_obj.cpp:14] consutor function HOST:[127.0.0.1] PORT:[9999] BACKLOG:[0]
+I1112 10:57:54.618902 28071 test_client.cpp:32] client receive message from server: worldhello

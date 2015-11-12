@@ -54,10 +54,12 @@ class SocketObj {
   // 通过socket函数构建的套接字
   int sockFD_;
  
-  struct sockaddr_in* psAddr_; 
   string strHost_;
   unsigned iPort_;
   
+  //本来需要一个sockaddr_in类型，来存储ip地址和端口号,但是在构造函数当中很难构造出一个完整的类型,总会报错incomplete type
+  //那么就无法将sockaddr_in写进成员当中
+
   //用于listen函数的backlog_,决定内核为socket排队的最大连接个数
   //从配置文件当中读取
   int backlog_;
