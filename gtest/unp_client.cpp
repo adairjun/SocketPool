@@ -12,6 +12,23 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
+const int MAXLINE = 256;
+
+void str_cli(FILE *fp, int sockfd) {
+  char sendline[MAXLINE];
+  char recvline[MAXLINE];
+  while (fgets(sendline, MAXLINE, fp) != NULL) {
+    LOG(INFO) << "client send message from server: " << sendline << endl;
+    write(sockfd, sendline, strlen(sendline));
+    if(read(sockfd, recvline, MAXLINE) == 0) {
+      LOG(ERROR) << "server terminated" << endl;
+      cerr << "server terminated" << endl;
+    }
+    fputs(recvline, stdout);
+    LOG(INFO) << "client receive message from server: " << recvline << endl;
+  }
+}
+
 const string HOST = "127.0.0.1";
 const unsigned PORT = 9999;
 // 由于是客户端不需要BACKLOG
@@ -25,15 +42,7 @@ int main(int argc, char** argv) {
   if (sock.Connect()<0) {
     cerr << "Connect error" << endl;
   }
-  int n;
-  char recvline[40];
-  while ((n=read(sock.Get(), recvline, 40)) > 0) {
-    recvline[n] = 0;
-    LOG(INFO) << "client receive message from server: " << recvline << endl;
-    if (fputs(recvline, stdout) == EOF) {
-      cerr << "fputs error" << endl;
-    }
-  }
+  str_cli(stdin, sock.Get());
   sock.Close();
   return 0;
 }

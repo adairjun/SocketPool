@@ -12,6 +12,18 @@ const string HOST = "";
 const unsigned PORT = 9999;
 const int BACKLOG = 10;
 
+const int MAXLINE = 256;
+void str_echo(int sockfd) {
+  ssize_t n;
+  char buf[MAXLINE]; 
+  
+  while((n=read(sockfd, buf, MAXLINE)) > 0) { 
+    write(sockfd, buf, n);
+  }
+  if (n<0) {
+    cerr << "str_echo: read error" << endl;
+  }
+}
 
 int main(int argc, char** argv) {
   // 使用glog来打日志,除错
@@ -21,10 +33,11 @@ int main(int argc, char** argv) {
   if (listener.Listen() != 0) {
     cerr << "Sorry, listen error!" << endl;
   }
+  pid_t childpid;
   while (true) {
     SocketObjPtr sockPtr = listener.Accept();
-    send(sockPtr->Get(), "worldhello", 10, 0);
-    sockPtr->Close();
+    str_echo(sockPtr->Get());
+    sockPtr->Close(); 
   }
   listener.Close();
   return 0;
