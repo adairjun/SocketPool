@@ -1,3 +1,4 @@
+// UNPv1 书当中使用的是select来进行IO复用,这里我使用epoll来做IO复用
 #include <iostream>
 #include <gtest/gtest.h>
 #include <arpa/inet.h>
@@ -12,7 +13,7 @@ const string HOST = "";
 const unsigned PORT = 9999;
 const int BACKLOG = 10;
 
-const int MAXLINE = 256;
+const int MAXLINE = 1024;
 void str_echo(int sockfd) {
   ssize_t n;
   char buf[MAXLINE]; 

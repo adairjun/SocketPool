@@ -28,38 +28,58 @@ class SocketObj {
   virtual ~SocketObj();
   void Dump() const;
   
-  //设置套接字的阻塞模式,nonblock为true时是非阻塞模式
+  /**
+   * 设置套接字的阻塞模式,nonblock为true时是非阻塞模式
+   */
   int SetNonBlock(bool nonblock); 
 
-  // 由于sockaddr_in.sin_addr.s_addr类型是unsigned类型
-  // 这个函数的作用就是把ip地址转换成s_addr能接受的类型
-  // 方便构建sockaddr_in
+  /**
+   * 由于sockaddr_in.sin_addr.s_addr类型是unsigned类型
+   * 这个函数的作用就是把ip地址转换成s_addr能接受的类型
+   * 方便构建sockaddr_in
+   */
   unsigned TranslateAddress();
   
-  // 封装的Bind函数
+  /**
+   * 封装的Bind函数
+   */
   int Bind();
 
-  //封装的listen函数
+  /**
+   * 封装的listen函数
+   */
   int Listen();
 
-  //封装的accept函数,由于accept函数返回一个套接字,这里再做一层封装,根据返回的套接字构建SocketObj对象 
+  /**
+   * 封装的accept函数,由于accept函数返回一个套接字,这里再做一层封装,根据返回的套接字构建SocketObj对象
+   */
   SocketObjPtr Accept();
    
-  //封装的connect函数  
+  /**
+   * 封装的connect函数
+   */
   int Connect();
 
-  //封装的close函数
+  /**
+   * 封装的close函数
+   */
   int Close();
 
-  //获取套接字
+  /**
+   * 获取套接字
+   */
   int Get() const {
     return sockFD_;
   }
  
-  //封装的getpeername函数,返回远端地址和端口的map
+  /**
+   * 封装的getpeername函数,返回远端地址和端口的map
+   */
   pair<string, int> GetPeer();
 
-  //封装的getsockname函数,返回本地地址和端口的map
+  /**
+   * 封装的getsockname函数,返回本地地址和端口的map
+   */
   pair<string, int> GetSock();
 
  private:
