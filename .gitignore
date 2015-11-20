@@ -2,4 +2,3 @@
 *.o
 *.so
 *.so.*
-gtest/gtest_*
