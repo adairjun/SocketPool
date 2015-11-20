@@ -22,9 +22,10 @@ const int MAXLINE = 1024;
 void str_echo(int sockfd) {
   ssize_t n;
   char buf[MAXLINE]; 
-  
   while ((n=read(sockfd, buf, MAXLINE)) > 0) { 
     write(sockfd, buf, n);
+    //将buf写回到客户端的时候一定要清空buf,否则的话下次read的时候buf里面会存在客户端上次发送的残留
+    memset(buf, 0, sizeof(buf));
   }
   if (n<0) {
     cerr << "str_echo: read error" << endl;
@@ -68,26 +69,36 @@ cout << " eeeeeeeeeeeeeeee" << endl;
         if (ev_fd == listenfd) {
   cout << "5555555555555555555" << endl;
 //=============================================================
-//struct sockaddr_in clientaddr;
-//socklen_t clilen = sizeof(clientaddr);
-//int connfd = accept(listenfd, (sockaddr*)&clientaddr, &clilen);
-//tmp.events = EPOLLIN;
-//tmp.data.fd = connfd;
-//epoll_ctl(efd, EPOLL_CTL_ADD, connfd, &tmp);   //EPOLL_CTL_ADD是加入
-//cout <<"6666666666666666666" << endl;
-//cout << "sockPtr->Get() " << connfd << endl;  
+struct sockaddr_in clientaddr;
+socklen_t clilen = sizeof(clientaddr);
+int connfd = accept(listenfd, (sockaddr*)&clientaddr, &clilen);
+tmp.events = EPOLLIN;
+tmp.data.fd = connfd;
+if (epoll_ctl(efd, EPOLL_CTL_ADD, connfd, &tmp) == -1) {   //EPOLL_CTL_ADD是加入
+  cerr << "epoll_ctl error" << endl;
+}
+else {
+   cout << "mmmmmmmmmmmmmmmmmmmmmmm" <<endl;
+}
+cout <<"6666666666666666666" << endl;
+cout << "sockPtr->Get() " << connfd << endl;  
 //============================================================
           //说明listener有事件发生,那么这个时候就要使用accept来获取连接了
-          SocketObjPtr sockPtr = listener.Accept();
-          int sockfd = sockPtr->Get(); //sockPtr->Get()得到socket描述符
-          //从accept得到了与客户端的连接之后,也要把连接放入epoll的监听当中去
-          //这比select的用法可是简单多了
-          tmp.events = EPOLLIN;
-          tmp.data.fd = sockfd;       
-          //注册一个事件
-          epoll_ctl(efd, EPOLL_CTL_ADD, sockfd, &tmp);   //EPOLL_CTL_ADD是加入
-  cout <<"6666666666666666666" << endl;
-  cout << "sockfd " << sockfd << endl;  
+//          SocketObjPtr sockPtr = listener.Accept();
+//          int sockfd = sockPtr->Get(); //sockPtr->Get()得到socket描述符
+//          //从accept得到了与客户端的连接之后,也要把连接放入epoll的监听当中去
+//          //这比select的用法可是简单多了
+//          tmp.events = EPOLLIN;
+//          tmp.data.fd = sockfd;       
+//          //注册一个事件
+//          if (epoll_ctl(efd, EPOLL_CTL_ADD, sockfd, &tmp) == -1) {   //EPOLL_CTL_ADD是加入
+//            cerr << "epoll_ctl error" << endl;
+//          }
+//          else {
+//             cout << "mmmmmmmmmmmmmmmmmmmmmmm" <<endl;
+//          }
+//  cout <<"6666666666666666666" << endl;
+//  cout << "sockfd " << sockfd << endl;  
         } else if (ev[i].events & EPOLLIN) {
   cout << "777777777777777777777" << endl;
           //这里可不用像客户端的epoll一样用if来判断一下ev_fd等于哪个连接

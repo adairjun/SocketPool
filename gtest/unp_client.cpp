@@ -68,6 +68,8 @@ void str_cli(int sockfd) {
           }          
           //从sockfd读入了,那么就准备向标准输出写数据
           fputs(recvline, stdout);
+          //把recvline打印到屏幕上之后,需要清空recvline,否则下次打印到屏幕的时候会有本地recvline的残留
+          memset(recvline, 0, sizeof(recvline));
         }
       } 
     }
