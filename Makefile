@@ -36,6 +36,7 @@ ifeq ($(BUILD_VERBOSE),0)
 	QUIET_CC        = @echo '   ' CC $@;
 	QUIET_CXX       = @echo '   ' CXX $@;
 	QUIET_LINK      = @echo '   ' LINK $@;
+	QUIET_AR        = @echo '   ' AR $@;
 endif
 
 all: $(LIBRARY) $(SHARED) 
@@ -45,7 +46,7 @@ check: all $(TARGETS)
 
 $(LIBRARY): $(LIBOBJECTS)
 	-rm -rf $@
-	$(AR) crv $@ $(LIBOBJECTS)
+	$(QUIET_AR)$(AR) crv $@ $(LIBOBJECTS)
 
 $(SHARED):
 	$(QUIET_CXX)$(CXX) $(SHARED_LDFLAGS) -o $@ $(LIBOBJECTS) $(LIBS)

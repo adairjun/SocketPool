@@ -2,3 +2,7 @@
 *.o
 *.so
 *.so.*
+./gtest/echo_event
+./gtest/gtest_client
+./gtest/unp_client
+./gtest/unp_server

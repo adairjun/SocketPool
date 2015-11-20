@@ -47,31 +47,26 @@ void str_echo(SocketObj listener) {
         //说明有读入,这里要判断一下是从STDIN_FILENO读入还是从socket读入
         if (ev_fd == listenfd) {
 //=============================================================
-struct sockaddr_in clientaddr;
-socklen_t clilen = sizeof(clientaddr);
-int connfd = accept(listenfd, (sockaddr*)&clientaddr, &clilen);
-tmp.events = EPOLLIN;
-tmp.data.fd = connfd;
-if (epoll_ctl(efd, EPOLL_CTL_ADD, connfd, &tmp) == -1) {   //EPOLL_CTL_ADD是加入
-  cerr << "epoll_ctl error" << endl;
-}
+//struct sockaddr_in clientaddr;
+//socklen_t clilen = sizeof(clientaddr);
+//int connfd = accept(listenfd, (sockaddr*)&clientaddr, &clilen);
+//tmp.events = EPOLLIN;
+//tmp.data.fd = connfd;
+//if (epoll_ctl(efd, EPOLL_CTL_ADD, connfd, &tmp) == -1) {   //EPOLL_CTL_ADD是加入
+//  cerr << "epoll_ctl error" << endl;
+//}
 //============================================================
           //说明listener有事件发生,那么这个时候就要使用accept来获取连接了
-//          SocketObjPtr sockPtr = listener.Accept();
-//          int sockfd = sockPtr->Get(); //sockPtr->Get()得到socket描述符
-//          //从accept得到了与客户端的连接之后,也要把连接放入epoll的监听当中去
-//          //这比select的用法可是简单多了
-//          tmp.events = EPOLLIN;
-//          tmp.data.fd = sockfd;       
-//          //注册一个事件
-//          if (epoll_ctl(efd, EPOLL_CTL_ADD, sockfd, &tmp) == -1) {   //EPOLL_CTL_ADD是加入
-//            cerr << "epoll_ctl error" << endl;
-//          }
-//          else {
-//             cout << "mmmmmmmmmmmmmmmmmmmmmmm" <<endl;
-//          }
-//  cout <<"6666666666666666666" << endl;
-//  cout << "sockfd " << sockfd << endl;  
+          SocketObjPtr sockPtr = listener.Accept();
+          int sockfd = sockPtr->Get(); //sockPtr->Get()得到socket描述符
+          //从accept得到了与客户端的连接之后,也要把连接放入epoll的监听当中去
+          //这比select的用法可是简单多了
+          tmp.events = EPOLLIN;
+          tmp.data.fd = sockfd;       
+          //注册一个事件
+          if (epoll_ctl(efd, EPOLL_CTL_ADD, sockfd, &tmp) == -1) {   //EPOLL_CTL_ADD是加入
+            cerr << "epoll_ctl error" << endl;
+          }
         } else if (ev[i].events & EPOLLIN) {
           //这里可不用像客户端的epoll一样用if来判断一下ev_fd等于哪个连接
           //因为根本没这个必要,反正除了listener之外一定就是客户端连接了,所以ev_fd一定是客户端连接
