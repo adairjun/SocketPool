@@ -19,27 +19,8 @@ const int FDSIZE = 10;
 const int EPOLLEVENTS = 8;
 
 const int MAXLINE = 1024;
-void str_echo(int sockfd) {
-  ssize_t n;
-  char buf[MAXLINE]; 
-  while ((n=read(sockfd, buf, MAXLINE)) > 0) { 
-    write(sockfd, buf, n);
-    //将buf写回到客户端的时候一定要清空buf,否则的话下次read的时候buf里面会存在客户端上次发送的残留
-    memset(buf, 0, sizeof(buf));
-  }
-  if (n<0) {
-    cerr << "str_echo: read error" << endl;
-  }
-}
 
-int main(int argc, char** argv) {
-  // 使用glog来打日志,除错
-  google::InitGoogleLogging(argv[0]);
-  FLAGS_log_dir = "../log";  
-  SocketObj listener(HOST, PORT, BACKLOG);
-  if (listener.Listen() != 0) {
-    cerr << "Sorry, listen error!" << endl;
-  }
+void str_echo(SocketObj listener) {
   int listenfd = listener.Get();
   //创建一个epoll句柄
   int efd = epoll_create(FDSIZE);
@@ -53,21 +34,18 @@ int main(int argc, char** argv) {
   tmp.data.fd = listenfd;   //listener.Get()得到socket描述符
   //注册一个事件
   epoll_ctl(efd, EPOLL_CTL_ADD, listenfd, &tmp);   //EPOLL_CTL_ADD是加入
+  char buf[MAXLINE]; 
   int ret; 
 
   while (true) {
     //epoll监视的只是连接而已
-cout << " eeeeeeeeeeeeeeee" << endl;
     ret = epoll_wait(efd, ev, EPOLLEVENTS, -1);        //-1这个位置设置的是一个超时值,设为-1表示永久阻塞
-  cout << "ret ======" << ret << endl;
     int ev_fd;
     for (int i=0; i<ret; ++i) {
       ev_fd = ev[i].data.fd;
       //epoll只需要监视读入的,不需要监视写出的
-  cout << "4444444444444444444444444" << endl;
         //说明有读入,这里要判断一下是从STDIN_FILENO读入还是从socket读入
         if (ev_fd == listenfd) {
-  cout << "5555555555555555555" << endl;
 //=============================================================
 struct sockaddr_in clientaddr;
 socklen_t clilen = sizeof(clientaddr);
@@ -77,11 +55,6 @@ tmp.data.fd = connfd;
 if (epoll_ctl(efd, EPOLL_CTL_ADD, connfd, &tmp) == -1) {   //EPOLL_CTL_ADD是加入
   cerr << "epoll_ctl error" << endl;
 }
-else {
-   cout << "mmmmmmmmmmmmmmmmmmmmmmm" <<endl;
-}
-cout <<"6666666666666666666" << endl;
-cout << "sockPtr->Get() " << connfd << endl;  
 //============================================================
           //说明listener有事件发生,那么这个时候就要使用accept来获取连接了
 //          SocketObjPtr sockPtr = listener.Accept();
@@ -100,17 +73,43 @@ cout << "sockPtr->Get() " << connfd << endl;
 //  cout <<"6666666666666666666" << endl;
 //  cout << "sockfd " << sockfd << endl;  
         } else if (ev[i].events & EPOLLIN) {
-  cout << "777777777777777777777" << endl;
           //这里可不用像客户端的epoll一样用if来判断一下ev_fd等于哪个连接
           //因为根本没这个必要,反正除了listener之外一定就是客户端连接了,所以ev_fd一定是客户端连接
           //至于这个连接是属于哪个客户端,根本不需要关心了
-          str_echo(ev_fd);
+          //str_echo(ev_fd);
+
+          ssize_t n = read(ev_fd, buf, MAXLINE);
+//这里也和客户端一样,从ev_fd读入之后要删除掉
+//或者可以不删除,只要是read失败再删除
+          if (n == -1) {
+            LOG(ERROR) << "read error." << endl;
+              tmp.events = EPOLLIN;
+              tmp.data.fd = ev_fd;
+              epoll_ctl(efd, EPOLL_CTL_DEL, ev_fd, &tmp);
+          } else if (n == 0) {
+           LOG(ERROR) << "client close." << endl; 
+             tmp.events = EPOLLIN;
+             tmp.data.fd = ev_fd;
+             epoll_ctl(efd, EPOLL_CTL_DEL, ev_fd, &tmp);
+          }
+          write(ev_fd, buf, n);
+          //将buf写回到客户端的时候一定要清空buf,否则的话下次read的时候buf里面会存在客户端上次发送的残留
+          memset(buf, 0, sizeof(buf));
         }
-  cout << "88888888888888888" << endl;
-  cout << "efd ====" << efd << endl;
     }
   }
   close(efd);
+}
+
+int main(int argc, char** argv) {
+  // 使用glog来打日志,除错
+  google::InitGoogleLogging(argv[0]);
+  FLAGS_log_dir = "../log";  
+  SocketObj listener(HOST, PORT, BACKLOG);
+  if (listener.Listen() != 0) {
+    cerr << "Sorry, listen error!" << endl;
+  }
+  str_echo(listener);
   listener.Close();
   return 0;
 }
