@@ -27,6 +27,8 @@ class SocketObj {
   explicit SocketObj(int sockFD);
   virtual ~SocketObj();
   void Dump() const;
+
+  string ErrorMessage();
   
   /**
    * 设置套接字的阻塞模式,nonblock为true时是非阻塞模式
@@ -101,6 +103,9 @@ class SocketObj {
   //用于listen函数的backlog_,决定内核为socket排队的最大连接个数
   //从配置文件当中读取
   int backlog_;
+
+  //错误信息
+  string strErrorMessage_;
 };
 
 #endif /* SOCKETPOOL_INCLUDE_SOCKET_OBJ_H */

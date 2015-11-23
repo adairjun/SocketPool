@@ -1,0 +1,19 @@
+{
+	"Config":
+	{
+		"ServerConnection":
+		{
+            "IP": "127.0.0.1",
+            "Port": 9999,
+            "Backlog": 10,
+			"max_connections": 15
+		},
+        "ClientConnection":
+        {
+            "IP": "127.0.0.1",
+            "Port": 9999,
+            "Backlog": 0,
+			"max_connections": 15
+        }
+	}
+}

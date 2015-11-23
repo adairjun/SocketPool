@@ -31,6 +31,10 @@ void SocketObj::Dump() const {
   printf("sockFD_=%d", sockFD_);
 }
 
+string SocketObj::ErrorMessage() {
+  return strErrorMessage_;
+}
+
 int SocketObj::SetNonBlock(bool nonblock) {
   int flag = fcntl(sockFD_, F_GETFL, 0);
   if (nonblock) {
@@ -41,7 +45,6 @@ int SocketObj::SetNonBlock(bool nonblock) {
     return fcntl(sockFD_, F_SETFL, flag & ~O_NONBLOCK);
   }
 }
-
 
 unsigned SocketObj::TranslateAddress() {
   if (strHost_ == "")
@@ -60,6 +63,7 @@ int SocketObj::Bind() {
   Close();
   sockFD_ = socket(AF_INET, SOCK_STREAM, 0);
   if (sockFD_ == -1) {
+    strErrorMessage_ = "can't bind, because sockFD_ = -1";
     return -1;
   }
   struct sockaddr_in sAddr;
@@ -74,11 +78,13 @@ int SocketObj::Listen() {
   Close();
   if (Bind() != 0) {
     Close();
+    strErrorMessage_ = "can't listen, because Bind() != 0";
     return -1;
   }
 
   if (listen(sockFD_, backlog_) != 0) {
     Close();
+    strErrorMessage_ = "can't listen, because listen() != 0";
     return -1;
   }
   return 0;
@@ -86,6 +92,7 @@ int SocketObj::Listen() {
 
 int SocketObj::Accept() {
   if (sockFD_ == -1) {
+    strErrorMessage_ = "can't accept, because sockFD_ = -1";
     return -1;
   }
   struct sockaddr_in sAddr;
@@ -98,6 +105,7 @@ int SocketObj::Connect() {
   Close();
   sockFD_ = socket(AF_INET, SOCK_STREAM, 0);
   if (sockFD_ == -1) {
+    strErrorMessage_ = "can't connect, because sockFD_ = -1";
     return -1;
   }
   struct sockaddr_in sAddr;
@@ -106,6 +114,7 @@ int SocketObj::Connect() {
   sAddr.sin_port = htons(iPort_);
   sAddr.sin_addr.s_addr = TranslateAddress();
   if (connect(sockFD_, (struct sockaddr*)&sAddr, sizeof(sAddr))<0) {
+    strErrorMessage_ = "can't connect, because connect()<0";
     Close();
     return -1;
   }
@@ -121,6 +130,7 @@ int SocketObj::Close() {
 
 pair<string, int> SocketObj::GetPeer() {
   if (sockFD_ == -1) {
+    strErrorMessage_ = "can't GetPeer(), because sockFD_ = -1";
     return make_pair("", 0);
   }
   struct sockaddr_in sAddr;
@@ -135,6 +145,7 @@ pair<string, int> SocketObj::GetPeer() {
 
 pair<string, int> SocketObj::GetSock() {
   if (sockFD_ == -1) {
+    strErrorMessage_ = "can't GetSock(), because sockFD_ = -1";
     return make_pair("", 0);
   }
   struct sockaddr_in sAddr;

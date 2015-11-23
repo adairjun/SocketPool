@@ -1,0 +1,22 @@
+<Config>
+
+	<ServerConnection> 
+        <!-- server端的ip -->
+        <IP>127.0.0.1</IP> 
+        <Port>9999</Port>
+        <!-- server端listen的backlog -->
+        <Backlog>10</Backlog>
+		<max_connections>15</max_connections>
+	</ServerConnection> 
+
+	<ClientConnection> 
+        <!-- client需要连接的IP -->
+        <IP>127.0.0.1</IP>
+        <!-- client需要连接的端口 -->
+        <Port>9999</Port> 
+        <!-- client根本不需要backlog -->
+        <Backlog>0</Backlog>
+		<max_connections>15</max_connections>
+	</ClientConnection> 
+
+</Config>
