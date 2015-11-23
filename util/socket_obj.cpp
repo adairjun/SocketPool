@@ -85,25 +85,21 @@ int SocketObj::Listen() {
 }
 
 SocketObjPtr SocketObj::Accept() {
-printf("zzzzzzzzzzzzzzzzzz\n");
   if (sockFD_ == -1) {
-printf("xxxxxxxxxxxxxxxx\n");
     // 未经任何初始化的shared_ptr就指向一个NULL,这是一个magic,因为不能直接返回NULL
     SocketObjPtr tPtr;
     return tPtr;
   }
-printf("cccccccccccccccccc\n");
   struct sockaddr_in sAddr;
   socklen_t length = sizeof(sAddr);
   int customFD = accept(sockFD_, (struct sockaddr*)&sAddr, &length);
   if (customFD == -1) {
-printf("vvvvvvvvvvvvvvvv\n");
-printf("-------------------customFD----------%d\n", customFD);
     SocketObjPtr tPtr;
     return tPtr;
   }
-printf("bbbbbbbbbbbbbbb\n");
-  SocketObjPtr tPtr(new SocketObj(customFD));
+  //这里必须要加上static,这是C++的函数返回局部变量指针的问题,不加上的话,使用accept会有错误
+  //整个SocketObj对象只有这一个函数返回的是SocketObjPtr
+  static SocketObjPtr tPtr(new SocketObj(customFD));
   return tPtr;
 }
 
