@@ -47,11 +47,7 @@ void str_echo(SocketObj listener) {
         //说明有读入,这里要判断一下是从STDIN_FILENO读入还是从socket读入
         if (ev_fd == listenfd) {
           //说明listener有事件发生,那么这个时候就要使用accept来获取连接了
-          //SocketObjPtr sockPtr = listener.Accept();
-          //int sockfd = sockPtr->Get();        //sockPtr->Get()得到socket描述符
-          //int sockfd = listener.AcceptInt();
-          SocketObj* sockPtr = listener.AcceptPtr();
-          int sockfd = sockPtr->Get();
+          int sockfd = listener.Accept();
           //从accept得到了与客户端的连接之后,也要把连接放入epoll的监听当中去
           //这比select的用法可是简单多了
           tmp.events = EPOLLIN;
@@ -60,10 +56,6 @@ void str_echo(SocketObj listener) {
           if (epoll_ctl(efd, EPOLL_CTL_ADD, sockfd, &tmp) == -1) {   //EPOLL_CTL_ADD是加入
             cerr << "epoll_ctl error" << endl;
           }
-          //问题就出在这个delete上面
-          //这里不过是手动delete,而shared_ptr在这里是自动delete,所以出现的错误都一样
-          //这就出现了一个问题,如果不delete,那么会内存泄漏,如果delete了,那么程序不能运行
-          delete sockPtr;
         } else if (ev[i].events & EPOLLIN) {
           //这里可不用像客户端的epoll一样用if来判断一下ev_fd等于哪个连接
           //因为根本没这个必要,反正除了listener之外一定就是客户端连接了,所以ev_fd一定是客户端连接

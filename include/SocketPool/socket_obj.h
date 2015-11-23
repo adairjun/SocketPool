@@ -51,11 +51,9 @@ class SocketObj {
   int Listen();
 
   /**
-   * 封装的accept函数,由于accept函数返回一个套接字,这里再做一层封装,根据返回的套接字构建SocketObj对象
+   * 封装的accept函数,由于accept函数返回一个套接字,这里直接返回int
    */
-  SocketObjPtr Accept();
-  SocketObj* AcceptPtr();
-  int AcceptInt();
+  int Accept();
    
   /**
    * 封装的connect函数
