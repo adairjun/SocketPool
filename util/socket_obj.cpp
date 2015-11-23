@@ -21,6 +21,9 @@ SocketObj::SocketObj(string host, unsigned port, int backlog)
 
 SocketObj::SocketObj(int sockFD)
     : sockFD_(sockFD) {
+    strHost_ = "";
+    iPort_ = 0;
+    backlog_ = 0;
 }
 
 SocketObj::~SocketObj() {

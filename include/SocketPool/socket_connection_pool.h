@@ -49,14 +49,14 @@ class SocketPool {
 
  private:
   string serverHost_;
-  string serverPort_;
-  string serverBacklog_;  
+  unsigned serverPort_;
+  int serverBacklog_;  
   //从socket.xml或者socket.json当中读取max_connections
   int serverPoolSize_;
 
   //这里是client连接的服务器的地址,所以除了clientPoolSize_,其他的都不能用client来命名
   string clientConnectHost_;
-  int clientConnectPort_;
+  unsigned clientConnectPort_;
   int clientConnectBacklog_;
   int clientPoolSize_;
 

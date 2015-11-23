@@ -24,14 +24,13 @@ SocketPool::SocketPool() {
   BOOST_AUTO(child, pt.get_child("Config.ServerConnection"));
   for (BOOST_AUTO(pos, child.begin()); pos!= child.end(); ++pos) {
   	if (pos->first == "IP") serverHost_ = pos->second.data();
-  	if (pos->first == "Port") serverPort_ = boost::lexical_cast<int>(pos->second.data());
+  	if (pos->first == "Port") serverPort_ = boost::lexical_cast<unsigned>(pos->second.data());
   	if (pos->first == "Backlog") serverBacklog_ = boost::lexical_cast<int>(pos->second.data());
   	if (pos->first == "max_connections") serverPoolSize_ = boost::lexical_cast<int>(pos->second.data());
   }
-cout << "backlog================" << serverBacklog_ << endl;
   // 构造函数的作用就是根据poolSize的大小来构造多个映射
   // 每个映射的连接都是同样的host,port,backlog
-  
+
   for (int i=0; i<serverPoolSize_; ++i) {
   	SocketObjPtr conn(new SocketObj(serverHost_, serverPort_, serverBacklog_));
     //Listen()当中已经封装了bind
@@ -43,8 +42,8 @@ cout << "backlog================" << serverBacklog_ << endl;
   }
 
   //client_list
-  BOOST_AUTO(child, pt.get_child("Config.ClientConnection"));
-  for (BOOST_AUTO(pos, child.begin()); pos!= child.end(); ++pos) {
+  BOOST_AUTO(childClient, pt.get_child("Config.ClientConnection"));
+  for (BOOST_AUTO(pos, childClient.begin()); pos!= childClient.end(); ++pos) {
   	if (pos->first == "IP") clientConnectHost_ = pos->second.data();
   	if (pos->first == "Port") clientConnectPort_ = boost::lexical_cast<int>(pos->second.data());
   	if (pos->first == "Backlog") clientConnectBacklog_ = boost::lexical_cast<int>(pos->second.data());
