@@ -62,6 +62,7 @@ void str_echo(SocketObj listener) {
           }
           //问题就出在这个delete上面
           //这里不过是手动delete,而shared_ptr在这里是自动delete,所以出现的错误都一样
+          //这就出现了一个问题,如果不delete,那么会内存泄漏,如果delete了,那么程序不能运行
           delete sockPtr;
         } else if (ev[i].events & EPOLLIN) {
           //这里可不用像客户端的epoll一样用if来判断一下ev_fd等于哪个连接
