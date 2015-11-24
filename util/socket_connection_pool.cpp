@@ -1,5 +1,6 @@
 #include "SocketPool/socket_connection_pool.h"
 #include <iostream>
+#include <stdlib.h>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/json_parser.hpp>
@@ -17,7 +18,7 @@ SocketPool::SocketPool() {
   const char* xml_path = "../config/socket.xml";	
   boost::property_tree::read_xml(xml_path, pt);
   
-  // 先做好server_list
+  // 先做好server_map
   BOOST_AUTO(child, pt.get_child("Config.Server"));
   for (BOOST_AUTO(pos, child.begin()); pos!= child.end(); ++pos) {
     BOOST_AUTO(nextchild, pos->second.get_child(""));
@@ -32,13 +33,17 @@ SocketPool::SocketPool() {
     SocketObjPtr conn(new SocketObj(serverHost_, serverPort_, serverBacklog_));
     //Listen()当中已经封装了bind
     if (conn->Listen()) {
-      server_list.push_back(conn);
+      //在insert之前需要先把ip和端口号整合成key,先对端口号做处理,把int转为string
+      char stringPort[10];
+      snprintf(stringPort, sizeof(stringPort), "%d", serverPort_);
+      string key = serverHost_ + "###" + stringPort;
+      server_map.insert(make_pair(key, conn));
     } else {
       strErrorMessage_ = conn->ErrorMessage();
     }
   }
 
-  //client_list
+  //client_map
   BOOST_AUTO(childClient, pt.get_child("Config.Client"));
   for (BOOST_AUTO(pos, childClient.begin()); pos!= childClient.end(); ++pos) {
     BOOST_AUTO(nextchild, pos->second.get_child(""));
@@ -54,9 +59,12 @@ SocketPool::SocketPool() {
     for (int i=0; i<clientPoolSize_; ++i) {
       SocketObjPtr conn(new SocketObj(clientConnectHost_, clientConnectPort_, clientConnectBacklog_));
       //只有server启动了,client的connect才会成功
-      //所以要先写server_list
+      //所以要先写server_map
       if (conn->Connect()) {
-    	client_list.push_back(conn);
+        char stringPort[10];
+        snprintf(stringPort, sizeof(stringPort), "%d", clientConnectPort_);
+        string key = clientConnectHost_ + "###" + stringPort;
+        client_map.insert(make_pair(key, conn));
       } else {
     	strErrorMessage_ = conn->ErrorMessage();
       }
@@ -81,14 +89,17 @@ SocketPool::SocketPool() {
       SocketObjPtr conn(new SocketObj(serverHost_, serverPort_, serverBacklog_));
       //Listen()当中已经封装了bind
       if (conn->Listen()) {
-        server_list.push_back(conn);
+        char stringPort[10];
+        snprintf(stringPort, sizeof(stringPort), "%d", serverPort_);
+        string key = serverHost_ + "###" + stringPort;
+        server_map.insert(make_pair(key, conn));
       } else {
         strErrorMessage_ = conn->ErrorMessage();
       }
     }
   }
 
-  //client_list
+  //client_map
   BOOST_AUTO(childClient, pt.get_child("Config.Client"));
   for (BOOST_AUTO(pos, childClient.begin()); pos!= childClient.end(); ++pos) {
     BOOST_FOREACH(boost::property_tree::ptree::value_type &v, pos->second.get_child("")) {
@@ -102,11 +113,14 @@ SocketPool::SocketPool() {
       for (int i=0; i<clientPoolSize_; ++i) {
         SocketObjPtr conn(new SocketObj(clientConnectHost_, clientConnectPort_, clientConnectBacklog_));
         //只有server启动了,client的connect才会成功
-        //所以要先写server_list
+        //所以要先写server_map
         if (conn->Connect()) {
-      	client_list.push_back(conn);
+          char stringPort[10];
+          snprintf(stringPort, sizeof(stringPort), "%d", clientConnectPort_);
+          string key = clientConnectHost_ + "###" + stringPort;
+          client_map.insert(make_pair(key, conn));
         } else {
-      	strErrorMessage_ = conn->ErrorMessage();
+      	  strErrorMessage_ = conn->ErrorMessage();
         }
       }
     }
@@ -124,16 +138,23 @@ SocketPool::~SocketPool() {
 SocketObjPtr SocketPool::GetConnection(bool server, string host, unsigned port) {
   // get connection operation
   unique_lock<mutex> lk(resource_mutex);
+  char stringPort[10];
+  snprintf(stringPort, sizeof(stringPort), "%d", port);
+  string key = host + "###" + stringPort;
   if (server) {
-    if (!server_list.empty()) {
-      SocketObjPtr ret = server_list.front();
-      server_list.pop_front();
+	multimap<string, SocketObjPtr>::iterator sIt = server_map.find(key);
+    if (sIt != server_map.end()) {
+      SocketObjPtr ret = sIt->second;
+      server_map.erase(sIt);
+      return ret;
     }
   } else {
-    if (!client_list.empty()) {
-      SocketObjPtr ret = client_list.front();
-      client_list.pop_front();
-    }
+	multimap<string, SocketObjPtr>::iterator sIt = client_map.find(key);
+    if (sIt != client_map.end()) {
+      SocketObjPtr ret = sIt->second;
+      client_map.erase(sIt);
+      return ret;
+	}
   }
 }
   
@@ -144,7 +165,9 @@ SocketObjPtr SocketPool::GetConnection(bool server, string host, unsigned port) 
 int SocketPool::ReleaseConnection(bool server, SocketObjPtr conn) {
   unique_lock<mutex> lk(resource_mutex);
   if (server) {
-    server_list.push_back(conn);
+    //server_map.insert(make_pair(key, conn));
+  } else {
+
   }
   return 1;
 }

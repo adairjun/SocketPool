@@ -8,13 +8,13 @@
 
 #include <string.h>
 #include <mutex>
-#include <list>
+#include <map>
 #include "socket_obj.h"
 
 using std::string;
 using std::mutex;
 using std::unique_lock;
-using std::list;
+using std::multimap;
 
 class SocketPool {
  public:
@@ -45,8 +45,8 @@ class SocketPool {
  public:
   //使用list来保存连接,而不用map
   //这里和DBPool不一样,DBPool是仅有一个list
-  list<SocketObjPtr> server_list;
-  list<SocketObjPtr> client_list;
+  multimap<string, SocketObjPtr> server_map;
+  multimap<string, SocketObjPtr> client_map;
 
  private:
   string serverHost_;
