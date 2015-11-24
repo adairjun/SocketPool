@@ -11,57 +11,107 @@ using std::cout;
 using std::endl;
 
 SocketPool::SocketPool() {
+  //这里我使用boost来解析xml和json配置文件,也可以使用rapidxml或者rapidjson
   // 从配置文件socket.xml当中读入mysql的ip, 用户, 密码, 数据库名称,	
   boost::property_tree::ptree pt;	
   const char* xml_path = "../config/socket.xml";	
   boost::property_tree::read_xml(xml_path, pt);
   
-  //这段注释的代码是读取json配置文件的
-  //	const char* json_path = "../config/socket.json";
-  //	boost::property_tree::read_json(json_path, pt);
-  
   // 先做好server_list
-  BOOST_AUTO(child, pt.get_child("Config.ServerConnection"));
+  BOOST_AUTO(child, pt.get_child("Config.Server"));
   for (BOOST_AUTO(pos, child.begin()); pos!= child.end(); ++pos) {
-  	if (pos->first == "IP") serverHost_ = pos->second.data();
-  	if (pos->first == "Port") serverPort_ = boost::lexical_cast<unsigned>(pos->second.data());
-  	if (pos->first == "Backlog") serverBacklog_ = boost::lexical_cast<int>(pos->second.data());
-  	if (pos->first == "max_connections") serverPoolSize_ = boost::lexical_cast<int>(pos->second.data());
-  }
-  // 构造函数的作用就是根据poolSize的大小来构造多个映射
-  // 每个映射的连接都是同样的host,port,backlog
+    BOOST_AUTO(nextchild, pos->second.get_child(""));
+    for (BOOST_AUTO(nextpos, nextchild.begin()); nextpos!= nextchild.end(); ++nextpos) {
+  	  if (nextpos->first == "IP") serverHost_ = nextpos->second.data();
+  	  if (nextpos->first == "Port") serverPort_ = boost::lexical_cast<unsigned>(nextpos->second.data());
+  	  if (nextpos->first == "Backlog") serverBacklog_ = boost::lexical_cast<int>(nextpos->second.data());
+    }
+    // 构造函数的作用就是根据poolSize的大小来构造多个映射
+    // 每个映射的连接都是同样的host,port,backlog
 
-  for (int i=0; i<serverPoolSize_; ++i) {
-  	SocketObjPtr conn(new SocketObj(serverHost_, serverPort_, serverBacklog_));
+    SocketObjPtr conn(new SocketObj(serverHost_, serverPort_, serverBacklog_));
     //Listen()当中已经封装了bind
-  	if (conn->Listen()) {
-  	  server_list.push_back(conn);
-  	} else {
-  	  strErrorMessage_ = conn->ErrorMessage();
-  	}
+    if (conn->Listen()) {
+      server_list.push_back(conn);
+    } else {
+      strErrorMessage_ = conn->ErrorMessage();
+    }
   }
 
   //client_list
-  BOOST_AUTO(childClient, pt.get_child("Config.ClientConnection"));
+  BOOST_AUTO(childClient, pt.get_child("Config.Client"));
   for (BOOST_AUTO(pos, childClient.begin()); pos!= childClient.end(); ++pos) {
-  	if (pos->first == "IP") clientConnectHost_ = pos->second.data();
-  	if (pos->first == "Port") clientConnectPort_ = boost::lexical_cast<int>(pos->second.data());
-  	if (pos->first == "Backlog") clientConnectBacklog_ = boost::lexical_cast<int>(pos->second.data());
-  	if (pos->first == "max_connections") clientPoolSize_ = boost::lexical_cast<int>(pos->second.data());
+    BOOST_AUTO(nextchild, pos->second.get_child(""));
+    for (BOOST_AUTO(nextpos, nextchild.begin()); nextpos!= nextchild.end(); ++nextpos) {
+  	  if (nextpos->first == "IP") clientConnectHost_ = nextpos->second.data();
+  	  if (nextpos->first == "Port") clientConnectPort_ = boost::lexical_cast<int>(nextpos->second.data());
+  	  if (nextpos->first == "Backlog") clientConnectBacklog_ = boost::lexical_cast<int>(nextpos->second.data());
+  	  if (nextpos->first == "max_connections") clientPoolSize_ = boost::lexical_cast<int>(nextpos->second.data());
+    }
+    // 构造函数的作用就是根据poolSize的大小来构造多个映射
+    // 每个映射的连接都是同样的host,port,backlog
+    
+    for (int i=0; i<clientPoolSize_; ++i) {
+      SocketObjPtr conn(new SocketObj(clientConnectHost_, clientConnectPort_, clientConnectBacklog_));
+      //只有server启动了,client的connect才会成功
+      //所以要先写server_list
+      if (conn->Connect()) {
+    	client_list.push_back(conn);
+      } else {
+    	strErrorMessage_ = conn->ErrorMessage();
+      }
+    }
   }
-  // 构造函数的作用就是根据poolSize的大小来构造多个映射
-  // 每个映射的连接都是同样的host,port,backlog
-  
-  for (int i=0; i<clientPoolSize_; ++i) {
-  	SocketObjPtr conn(new SocketObj(clientConnectHost_, clientConnectPort_, clientConnectBacklog_));
-    //只有server启动了,client的connect才会成功
-    //所以要先写server_list
-  	if (conn->Connect()) {
-  	  client_list.push_back(conn);
-  	} else {
-  	  strErrorMessage_ = conn->ErrorMessage();
-  	}
+
+  /**
+   * 由于json当中使用数组来保存Connection,这里不能通用代码
+   * 这段注释的代码是读取json配置文件的
+  const char* json_path = "../config/socket.json";
+  boost::property_tree::read_json(json_path, pt);
+  BOOST_AUTO(child, pt.get_child("Config.Server"));
+  for (BOOST_AUTO(pos, child.begin()); pos!= child.end(); ++pos) {
+   //这里应该遍历数组
+    BOOST_FOREACH(boost::property_tree::ptree::value_type &v, pos->second.get_child("")) {
+      BOOST_AUTO(nextchild, v.second.get_child(""));
+      for (BOOST_AUTO(nextpos, nextchild.begin()); nextpos!= nextchild.end(); ++nextpos) {
+  	    if (nextpos->first == "IP") serverHost_ = nextpos->second.data();
+  	    if (nextpos->first == "Port") serverPort_ = boost::lexical_cast<unsigned>(nextpos->second.data());
+  	    if (nextpos->first == "Backlog") serverBacklog_ = boost::lexical_cast<int>(nextpos->second.data());
+      } 
+      SocketObjPtr conn(new SocketObj(serverHost_, serverPort_, serverBacklog_));
+      //Listen()当中已经封装了bind
+      if (conn->Listen()) {
+        server_list.push_back(conn);
+      } else {
+        strErrorMessage_ = conn->ErrorMessage();
+      }
+    }
   }
+
+  //client_list
+  BOOST_AUTO(childClient, pt.get_child("Config.Client"));
+  for (BOOST_AUTO(pos, childClient.begin()); pos!= childClient.end(); ++pos) {
+    BOOST_FOREACH(boost::property_tree::ptree::value_type &v, pos->second.get_child("")) {
+      BOOST_AUTO(nextchild, v.second.get_child(""));
+      for (BOOST_AUTO(nextpos, nextchild.begin()); nextpos!= nextchild.end(); ++nextpos) {
+  	    if (nextpos->first == "IP") clientConnectHost_ = nextpos->second.data();
+  	    if (nextpos->first == "Port") clientConnectPort_ = boost::lexical_cast<int>(nextpos->second.data());
+  	    if (nextpos->first == "Backlog") clientConnectBacklog_ = boost::lexical_cast<int>(nextpos->second.data());
+  	    if (nextpos->first == "max_connections") clientPoolSize_ = boost::lexical_cast<int>(nextpos->second.data());
+      }
+      for (int i=0; i<clientPoolSize_; ++i) {
+        SocketObjPtr conn(new SocketObj(clientConnectHost_, clientConnectPort_, clientConnectBacklog_));
+        //只有server启动了,client的connect才会成功
+        //所以要先写server_list
+        if (conn->Connect()) {
+      	client_list.push_back(conn);
+        } else {
+      	strErrorMessage_ = conn->ErrorMessage();
+        }
+      }
+    }
+  }
+  */
 }
   
 SocketPool::~SocketPool() {
@@ -69,8 +119,9 @@ SocketPool::~SocketPool() {
 
 /**
  * 从list当中选取一个连接,如果传入true,那么就从server_list当中选一个连接
+ * host和port是筛选的端口号
  */
-SocketObjPtr SocketPool::GetConnection(bool server) {
+SocketObjPtr SocketPool::GetConnection(bool server, string host, unsigned port) {
   // get connection operation
   unique_lock<mutex> lk(resource_mutex);
   if (server) {

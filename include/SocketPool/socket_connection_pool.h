@@ -24,8 +24,9 @@ class SocketPool {
   SocketPool& operator=(const SocketPool&) = delete;
   /**
    * 从list当中选取一个连接,如果传入true,那么就从server_list当中选一个连接
+   * host和port是筛选的端口号
    */
-  SocketObjPtr GetConnection(bool server);
+  SocketObjPtr GetConnection(bool server, string host, unsigned port);
 
   /**
    * 释放特定的连接,就是把SocketObjPtr放回到list当中

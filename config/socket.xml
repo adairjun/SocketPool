@@ -1,22 +1,39 @@
 <Config>
 
-	<ServerConnection> 
-        <!-- server端的ip -->
-        <IP>127.0.0.1</IP> 
-        <Port>9999</Port>
-        <!-- server端listen的backlog -->
-        <Backlog>10</Backlog>
-		<max_connections>15</max_connections>
-	</ServerConnection> 
+	<Server> 
+        <Connection>
+            <!-- server端的ip,由于这是在本机启动,所以这里就写死在127.0.0.1,没有必要改动 -->
+            <IP>127.0.0.1</IP> 
+            <!-- 这个端口是起始的端口,由于server的连接池和mysql的连接池不可能一样, server的连接池是端口和连接一一对应的关系-->
+            <Port>9998</Port>
+            <!-- server端listen的backlog -->
+            <Backlog>10</Backlog>
+        </Connection>
+        <Connection>
+            <IP>127.0.0.1</IP> 
+            <Port>9999</Port>
+            <Backlog>10</Backlog>
+        </Connection>
+	</Server> 
 
-	<ClientConnection> 
-        <!-- client需要连接的IP -->
-        <IP>127.0.0.1</IP>
-        <!-- client需要连接的端口 -->
-        <Port>9999</Port> 
-        <!-- client根本不需要backlog -->
-        <Backlog>0</Backlog>
-		<max_connections>15</max_connections>
-	</ClientConnection> 
+	<Client> 
+        <Connection>
+            <!-- client需要连接的IP -->
+            <IP>127.0.0.1</IP>
+            <!-- client需要连接的端口 -->
+            <!-- client与server又不一样,因为多个client可以同时连接一个端口 -->
+            <!-- 所以这里的max_connections就是同一个端口的连接数目 -->
+            <Port>9998</Port> 
+            <!-- client根本不需要backlog -->
+            <Backlog>0</Backlog>
+		    <max_connections>1</max_connections>
+        </Connection>
+        <Connection>
+            <IP>127.0.0.1</IP>
+            <Port>9999</Port> 
+            <Backlog>0</Backlog>
+		    <max_connections>2</max_connections>
+        </Connection>
+	</Client> 
 
 </Config>
