@@ -13,6 +13,7 @@ SocketObj::SocketObj(string host, unsigned port, int backlog)
     : strHost_(host),
       iPort_(port),
       backlog_(backlog) { 
+printf(" SocketObj::SocketObj(string host, unsigned port, int backlog) \n");
     LOG(INFO) << "consutor function HOST:[" << host << "]" 
               << " PORT:[" << port << "]" 
               << " BACKLOG:[" << backlog << "]";
@@ -21,12 +22,14 @@ SocketObj::SocketObj(string host, unsigned port, int backlog)
 
 SocketObj::SocketObj(int sockFD)
     : sockFD_(sockFD) {
+printf(" SocketObj::SocketObj(int sockFD) \n");
     strHost_ = "";
     iPort_ = 0;
     backlog_ = 0;
 }
 
 SocketObj::~SocketObj() {
+printf(" SocketObj::~SocketObj() { \n");
   Close();
 }
 
@@ -50,6 +53,7 @@ int SocketObj::SetNonBlock(bool nonblock) {
 }
 
 unsigned SocketObj::TranslateAddress() {
+printf(" unsigned SocketObj::TranslateAddress() { \n");
   if (strHost_ == "")
     return INADDR_ANY; 
   //return inet_addr(strHost_.c_str());
@@ -63,6 +67,7 @@ unsigned SocketObj::TranslateAddress() {
 }
 
 int SocketObj::Bind() {
+printf(" int SocketObj::Bind() { \n");
   Close();
   sockFD_ = socket(AF_INET, SOCK_STREAM, 0);
   if (sockFD_ == -1) {
@@ -78,6 +83,7 @@ int SocketObj::Bind() {
 }
 
 int SocketObj::Listen() {
+printf(" int SocketObj::Listen() { \n");
   Close();
   if (Bind() != 0) {
     Close();
@@ -94,6 +100,7 @@ int SocketObj::Listen() {
 }
 
 int SocketObj::Accept() {
+printf(" int SocketObj::Accept() { \n");
   if (sockFD_ == -1) {
     strErrorMessage_ = "can't accept, because sockFD_ = -1";
     return -1;
@@ -105,6 +112,7 @@ int SocketObj::Accept() {
 }
 
 int SocketObj::Connect() {
+printf(" int SocketObj::Connect() { \n");
   Close();
   sockFD_ = socket(AF_INET, SOCK_STREAM, 0);
   if (sockFD_ == -1) {
@@ -125,6 +133,7 @@ int SocketObj::Connect() {
 }
 
 int SocketObj::Close() {
+printf(" int SocketObj::Close() { \n");
   if (sockFD_ != -1) {
     close(sockFD_);
     sockFD_ = -1;
@@ -132,6 +141,7 @@ int SocketObj::Close() {
 }
 
 pair<string, int> SocketObj::GetPeer() {
+printf(" pair<string, int> SocketObj::GetPeer() { \n");
   if (sockFD_ == -1) {
     strErrorMessage_ = "can't GetPeer(), because sockFD_ = -1";
     return make_pair("", 0);
@@ -148,6 +158,7 @@ pair<string, int> SocketObj::GetPeer() {
 }
 
 pair<string, int> SocketObj::GetSock() {
+printf(" pair<string, int> SocketObj::GetSock() { \n");
   if (sockFD_ == -1) {
     strErrorMessage_ = "can't GetSock(), because sockFD_ = -1";
     return make_pair("", 0);

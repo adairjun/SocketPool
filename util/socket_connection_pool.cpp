@@ -12,6 +12,7 @@ using std::cout;
 using std::endl;
 
 SocketPool::SocketPool() {
+printf("[FILE:%s]:line:%d\n", __FILE__, __LINE__);
   //这里我使用boost来解析xml和json配置文件,也可以使用rapidxml或者rapidjson
   // 从配置文件socket.xml当中读入mysql的ip, 用户, 密码, 数据库名称,	
   boost::property_tree::ptree pt;	
@@ -126,9 +127,11 @@ SocketPool::SocketPool() {
     }
   }
   */
+printf("[FILE:%s]:line:%d\n", __FILE__, __LINE__);
 }
   
 SocketPool::~SocketPool() {
+printf("[FILE:%s]:line:%d\n", __FILE__, __LINE__);
   //析构函数做的工作是轮询map,让每个连接都close掉
   //先close掉server
   for (multimap<string, SocketObjPtr>::iterator sIt = server_map.begin(); sIt != server_map.end(); ++sIt) {
@@ -145,6 +148,7 @@ SocketPool::~SocketPool() {
  * host和port是筛选的端口号
  */
 SocketObjPtr SocketPool::GetConnection(bool server, string host, unsigned port) {
+printf("[FILE:%s]:line:%d\n", __FILE__, __LINE__);
   // get connection operation
   unique_lock<mutex> lk(resource_mutex);
   char stringPort[10];
@@ -174,6 +178,7 @@ SocketObjPtr SocketPool::GetConnection(bool server, string host, unsigned port) 
  * 用户还能插入构造的连接,但是这样做没有意义
  */
 int SocketPool::ReleaseConnection(bool server, SocketObjPtr conn) {
+printf("[FILE:%s]:line:%d\n", __FILE__, __LINE__);
   unique_lock<mutex> lk(resource_mutex);
   if (server) {
     pair<string, int> sockPair = conn->GetSock();
