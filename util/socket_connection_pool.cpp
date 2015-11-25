@@ -129,6 +129,15 @@ SocketPool::SocketPool() {
 }
   
 SocketPool::~SocketPool() {
+  //析构函数做的工作是轮询map,让每个连接都close掉
+  //先close掉server
+  for (multimap<string, SocketObjPtr>::iterator sIt = server_map.begin(); sIt != server_map.end(); ++sIt) {
+    sIt->second->Close();
+  }
+  //再close掉client
+  for (multimap<string, SocketObjPtr>::iterator sIt = client_map.begin(); sIt != client_map.end(); ++sIt) {
+    sIt->second->Close();
+  }
 }
 
 /**
