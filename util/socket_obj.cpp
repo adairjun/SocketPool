@@ -139,6 +139,7 @@ pair<string, int> SocketObj::GetPeer() {
   struct sockaddr_in sAddr;
   socklen_t length = sizeof(sAddr);
   if(getpeername(sockFD_, (struct sockaddr*)&sAddr, &length) != 0) {
+    strErrorMessage_ = "getpeername != 0";
     return make_pair("", 0);
   }
   string ipAddr = inet_ntoa(sAddr.sin_addr);
@@ -154,6 +155,7 @@ pair<string, int> SocketObj::GetSock() {
   struct sockaddr_in sAddr;
   socklen_t length = sizeof(sAddr);
   if(getsockname(sockFD_, (struct sockaddr*)&sAddr, &length) != 0) {
+    strErrorMessage_ = "getsockname != 0";
     return make_pair("", 0);
   }
   string ipAddr = inet_ntoa(sAddr.sin_addr);

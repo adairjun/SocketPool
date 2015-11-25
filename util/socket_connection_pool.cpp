@@ -161,13 +161,23 @@ SocketObjPtr SocketPool::GetConnection(bool server, string host, unsigned port) 
 /**
  * 释放特定的连接,就是把SocketObjPtr放回到list当中
  * 第一个参数指定的是这个SocketObjPtr是server或者是client
+ * 其实严格地来说这个函数名字不应该叫做释放,而是插入,因为除了插入从池当中取出来的连接之外
+ * 用户还能插入构造的连接,但是这样做没有意义
  */
 int SocketPool::ReleaseConnection(bool server, SocketObjPtr conn) {
   unique_lock<mutex> lk(resource_mutex);
   if (server) {
-    //server_map.insert(make_pair(key, conn));
+    pair<string, int> sockPair = conn->GetSock();
+    char stringPort[10];
+    snprintf(stringPort, sizeof(stringPort), "%d", sockPair.second);
+    string key = sockPair.first + "###" + stringPort;
+    server_map.insert(make_pair(key, conn));
   } else {
-
+    pair<string, int> peerPair= conn->GetPeer();
+    char stringPort[10];
+    snprintf(stringPort, sizeof(stringPort), "%d", peerPair.second);
+    string key = peerPair.first + "###" + stringPort;
+    client_map.insert(make_pair(key, conn));
   }
   return 1;
 }
