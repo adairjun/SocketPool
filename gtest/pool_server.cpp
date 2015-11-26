@@ -5,7 +5,7 @@
 #include <thread>
 #include <event2/event.h>
 #include <event2/bufferevent.h>
-#include "SocketPool/socket_connection_pool.h"
+#include "SocketPool/server_connection_pool.h"
 
 using std::cout;
 using std::cerr;
@@ -18,7 +18,7 @@ const int MAXLINE = 1024;
 char buf[MAXLINE];
 
 // 初始化全局的socket连接池
-static SocketPoolPtr socketpool_ptr(new SocketPool);
+static ServerPoolPtr serverpool_ptr(new ServerPool);
 
 typedef struct mybase {
   SocketObjPtr socketPtr;
@@ -35,7 +35,7 @@ int main(int argc, char** argv) {
   google::InitGoogleLogging(argv[0]);
   FLAGS_log_dir = "../log";  
   //从连接池当中取出端口号为9999的连接
-  SocketObjPtr listener = socketpool_ptr->GetConnection(true, HOST, PORT);
+  SocketObjPtr listener = serverpool_ptr->GetConnection(HOST, PORT);
   //==========================================================
   //从这里开始写server代码
   int listenfd = listener->Get();
@@ -64,7 +64,7 @@ int main(int argc, char** argv) {
   //==========================================================
   //==========================================================
 
-  socketpool_ptr->ReleaseConnection(true, listener);
+  serverpool_ptr->ReleaseConnection(listener);
   return 0;
 }
 

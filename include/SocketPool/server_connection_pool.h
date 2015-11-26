@@ -16,25 +16,24 @@ using std::mutex;
 using std::unique_lock;
 using std::multimap;
 
-class SocketPool {
+class ServerPool {
  public:
-  SocketPool();
-  virtual ~SocketPool();
-  SocketPool(const SocketPool&) = delete;
-  SocketPool& operator=(const SocketPool&) = delete;
+  ServerPool();
+  virtual ~ServerPool();
+  ServerPool(const ServerPool&) = delete;
+  ServerPool& operator=(const ServerPool&) = delete;
 
   void Dump() const;
   /**
-   * 从list当中选取一个连接,如果传入true,那么就从server_list当中选一个连接
+   * 从list当中选取一个连接
    * host和port是筛选的端口号
    */
-  SocketObjPtr GetConnection(bool server, string host, unsigned port);
+  SocketObjPtr GetConnection(string host, unsigned port);
 
   /**
    * 释放特定的连接,就是把SocketObjPtr放回到list当中
-   * 第一个参数指定的是这个SocketObjPtr是server或者是client
    */
-  int ReleaseConnection(bool server, SocketObjPtr);
+  int ReleaseConnection(SocketObjPtr);
 
   /**
    * 构造函数创建poolsize个连接错误时候用来打印错误信息
@@ -48,7 +47,6 @@ class SocketPool {
   //使用list来保存连接,而不用map
   //这里和DBPool不一样,DBPool是仅有一个list
   multimap<string, SocketObjPtr> server_map;
-  multimap<string, SocketObjPtr> client_map;
 
  private:
   string serverHost_;
@@ -57,15 +55,9 @@ class SocketPool {
   //从socket.xml或者socket.json当中读取max_connections
   int serverPoolSize_;
 
-  //这里是client连接的服务器的地址,所以除了clientPoolSize_,其他的都不能用client来命名
-  string clientConnectHost_;
-  unsigned clientConnectPort_;
-  int clientConnectBacklog_;
-  int clientPoolSize_;
-
   //错误信息
   string strErrorMessage_;
 };
 
-typedef boost::shared_ptr<SocketPool> SocketPoolPtr;
+typedef boost::shared_ptr<ServerPool> ServerPoolPtr;
 #endif /* SOCKETPOOL_INCLUD _SOCKET_CONNECTION_POOL_H */

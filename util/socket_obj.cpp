@@ -35,6 +35,10 @@ printf(" SocketObj::~SocketObj() { \n");
 
 void SocketObj::Dump() const {
   printf("sockFD_=%d", sockFD_);
+  printf("strHost_=%s", strHost_.c_str());
+  printf("iPort_=%d", iPort_);
+  printf("backlog_=%d", backlog_);
+  printf("strErrorMessage_=%d", strErrorMessage_);
 }
 
 string SocketObj::ErrorMessage() {
