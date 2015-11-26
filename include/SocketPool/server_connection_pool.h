@@ -33,7 +33,7 @@ class ServerPool {
   /**
    * 释放特定的连接,就是把SocketObjPtr放回到list当中
    */
-  int ReleaseConnection(SocketObjPtr);
+  bool ReleaseConnection(SocketObjPtr);
 
   /**
    * 构造函数创建poolsize个连接错误时候用来打印错误信息

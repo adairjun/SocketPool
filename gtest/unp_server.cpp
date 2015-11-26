@@ -90,7 +90,7 @@ int main(int argc, char** argv) {
   google::InitGoogleLogging(argv[0]);
   FLAGS_log_dir = "../log";  
   SocketObj listener(HOST, PORT, BACKLOG);
-  if (listener.Listen() != 0) {
+  if (listener.Listen() == false) {
     cerr << "Sorry, listen error!" << endl;
   }
   str_echo(listener);

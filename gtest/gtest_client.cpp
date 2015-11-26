@@ -8,7 +8,7 @@
 #include <Theron/Theron.h>
 #include <gtest/gtest.h>
 #include <event2/event.h>
-#include "SocketPool/socket_connection_pool.h"
+#include "SocketPool/client_connection_pool.h"
 
 using std::cout;
 using std::endl;

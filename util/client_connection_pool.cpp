@@ -12,7 +12,6 @@ using std::cout;
 using std::endl;
 
 ClientPool::ClientPool() {
-printf("[FILE:%s]:line:%d\n", __FILE__, __LINE__);
   //这里我使用boost来解析xml和json配置文件,也可以使用rapidxml或者rapidjson
   // 从配置文件socket.xml当中读入mysql的ip, 用户, 密码, 数据库名称,	
   boost::property_tree::ptree pt;	
@@ -35,7 +34,6 @@ printf("[FILE:%s]:line:%d\n", __FILE__, __LINE__);
     for (int i=0; i<clientPoolSize_; ++i) {
       SocketObjPtr conn(new SocketObj(clientConnectHost_, clientConnectPort_, clientConnectBacklog_));
       //只有server启动了,client的connect才会成功
-      //所以要先写server_map
       if (conn->Connect()) {
         char stringPort[10];
         snprintf(stringPort, sizeof(stringPort), "%d", clientConnectPort_);
@@ -67,7 +65,6 @@ printf("[FILE:%s]:line:%d\n", __FILE__, __LINE__);
       for (int i=0; i<clientPoolSize_; ++i) {
         SocketObjPtr conn(new SocketObj(clientConnectHost_, clientConnectPort_, clientConnectBacklog_));
         //只有server启动了,client的connect才会成功
-        //所以要先写server_map
         if (conn->Connect()) {
           char stringPort[10];
           snprintf(stringPort, sizeof(stringPort), "%d", clientConnectPort_);
@@ -80,11 +77,9 @@ printf("[FILE:%s]:line:%d\n", __FILE__, __LINE__);
     }
   }
   */
-printf("[FILE:%s]:line:%d\n", __FILE__, __LINE__);
 }
   
 ClientPool::~ClientPool() {
-printf("[FILE:%s]:line:%d\n", __FILE__, __LINE__);
   //析构函数做的工作是轮询map,让每个连接都close掉
   //再close掉client
   for (multimap<string, SocketObjPtr>::iterator sIt = client_map.begin(); sIt != client_map.end(); ++sIt) {
@@ -96,15 +91,26 @@ printf("[FILE:%s]:line:%d\n", __FILE__, __LINE__);
  * Dump函数,专业debug30年!
  */
 void ClientPool::Dump() const {
-  printf("");
+  printf("\n=====ClientPool Dump START ========== \n");
+  printf("clientConnectHost_=%s ", clientConnectHost_.c_str());
+  printf("clientConnectPort_=%d ", clientConnectPort_);
+  printf("clientConnectBacklog_=%d ", clientConnectBacklog_);
+  printf("clientPoolSize_=%d ", clientPoolSize_);
+  printf("strErrorMessage_=%s\n ", strErrorMessage_.c_str());
+  int count = 0;
+  for (auto it = client_map.begin(); it!=client_map.end(); ++it) {
+    printf("count==%d ", count);
+    it->second->Dump();
+    ++count;
+  }
+  printf("\n===ClientPool DUMP END ============\n");
 }
 
 /**
- * 从list当中选取一个连接
+ * 从map当中选取一个连接
  * host和port是筛选的端口号
  */
 SocketObjPtr ClientPool::GetConnection(string host, unsigned port) {
-printf("[FILE:%s]:line:%d\n", __FILE__, __LINE__);
   // get connection operation
   unique_lock<mutex> lk(resource_mutex);
   char stringPort[10];
@@ -123,15 +129,14 @@ printf("[FILE:%s]:line:%d\n", __FILE__, __LINE__);
  * 其实严格地来说这个函数名字不应该叫做释放,而是插入,因为除了插入从池当中取出来的连接之外
  * 用户还能插入构造的连接,但是这样做没有意义
  */
-int ClientPool::ReleaseConnection(SocketObjPtr conn) {
-printf("[FILE:%s]:line:%d\n", __FILE__, __LINE__);
+bool ClientPool::ReleaseConnection(SocketObjPtr conn) {
   unique_lock<mutex> lk(resource_mutex);
   pair<string, int> peerPair= conn->GetPeer();
   char stringPort[10];
   snprintf(stringPort, sizeof(stringPort), "%d", peerPair.second);
   string key = peerPair.first + "###" + stringPort;
   client_map.insert(make_pair(key, conn));
-  return 1;
+  return true;
 }
 
 /**

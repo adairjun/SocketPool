@@ -13,7 +13,6 @@ SocketObj::SocketObj(string host, unsigned port, int backlog)
     : strHost_(host),
       iPort_(port),
       backlog_(backlog) { 
-printf(" SocketObj::SocketObj(string host, unsigned port, int backlog) \n");
     LOG(INFO) << "consutor function HOST:[" << host << "]" 
               << " PORT:[" << port << "]" 
               << " BACKLOG:[" << backlog << "]";
@@ -22,23 +21,23 @@ printf(" SocketObj::SocketObj(string host, unsigned port, int backlog) \n");
 
 SocketObj::SocketObj(int sockFD)
     : sockFD_(sockFD) {
-printf(" SocketObj::SocketObj(int sockFD) \n");
     strHost_ = "";
     iPort_ = 0;
     backlog_ = 0;
 }
 
 SocketObj::~SocketObj() {
-printf(" SocketObj::~SocketObj() { \n");
   Close();
 }
 
 void SocketObj::Dump() const {
+  printf("\n=====SocketObj Dump START ========== \n");
   printf("sockFD_=%d", sockFD_);
   printf("strHost_=%s", strHost_.c_str());
   printf("iPort_=%d", iPort_);
   printf("backlog_=%d", backlog_);
-  printf("strErrorMessage_=%d", strErrorMessage_);
+  printf("strErrorMessage_=%d", strErrorMessage_.c_str());
+  printf("\n===SocketObj DUMP END ============\n");
 }
 
 string SocketObj::ErrorMessage() {
@@ -57,7 +56,6 @@ int SocketObj::SetNonBlock(bool nonblock) {
 }
 
 unsigned SocketObj::TranslateAddress() {
-printf(" unsigned SocketObj::TranslateAddress() { \n");
   if (strHost_ == "")
     return INADDR_ANY; 
   //return inet_addr(strHost_.c_str());
@@ -70,41 +68,38 @@ printf(" unsigned SocketObj::TranslateAddress() { \n");
   return *(int*)(pstrHost_->h_addr);
 }
 
-int SocketObj::Bind() {
-printf(" int SocketObj::Bind() { \n");
+bool SocketObj::Bind() {
   Close();
   sockFD_ = socket(AF_INET, SOCK_STREAM, 0);
   if (sockFD_ == -1) {
     strErrorMessage_ = "can't bind, because sockFD_ = -1";
-    return -1;
+    return false;
   }
   struct sockaddr_in sAddr;
   memset(&sAddr, 0, sizeof(sAddr));
   sAddr.sin_addr.s_addr = TranslateAddress();
   sAddr.sin_family = AF_INET;
   sAddr.sin_port = htons(iPort_);
-  return bind(sockFD_, (struct sockaddr*)&sAddr, sizeof(sAddr)); 
+  if (bind(sockFD_, (struct sockaddr*)&sAddr, sizeof(sAddr)) != 0) {
+    Close();
+    strErrorMessage_ = "bind != 0";
+    return false;
+  } 
+  return true;
 }
 
-int SocketObj::Listen() {
-printf(" int SocketObj::Listen() { \n");
+bool SocketObj::Listen() {
   Close();
-  if (Bind() != 0) {
-    Close();
-    strErrorMessage_ = "can't listen, because Bind() != 0";
-    return -1;
-  }
-
+  Bind();
   if (listen(sockFD_, backlog_) != 0) {
     Close();
     strErrorMessage_ = "can't listen, because listen() != 0";
-    return -1;
+    return false;
   }
-  return 0;
+  return true;
 }
 
 int SocketObj::Accept() {
-printf(" int SocketObj::Accept() { \n");
   if (sockFD_ == -1) {
     strErrorMessage_ = "can't accept, because sockFD_ = -1";
     return -1;
@@ -115,13 +110,12 @@ printf(" int SocketObj::Accept() { \n");
   return customFD;
 }
 
-int SocketObj::Connect() {
-printf(" int SocketObj::Connect() { \n");
+bool SocketObj::Connect() {
   Close();
   sockFD_ = socket(AF_INET, SOCK_STREAM, 0);
   if (sockFD_ == -1) {
     strErrorMessage_ = "can't connect, because sockFD_ = -1";
-    return -1;
+    return false;
   }
   struct sockaddr_in sAddr;
   memset(&sAddr, 0, sizeof(sAddr));
@@ -131,21 +125,20 @@ printf(" int SocketObj::Connect() { \n");
   if (connect(sockFD_, (struct sockaddr*)&sAddr, sizeof(sAddr))<0) {
     strErrorMessage_ = "can't connect, because connect()<0";
     Close();
-    return -1;
+    return false;
   }
-  return 0; 
+  return true; 
 }
 
-int SocketObj::Close() {
-printf(" int SocketObj::Close() { \n");
+bool SocketObj::Close() {
   if (sockFD_ != -1) {
     close(sockFD_);
     sockFD_ = -1;
   }
+  return true;
 }
 
 pair<string, int> SocketObj::GetPeer() {
-printf(" pair<string, int> SocketObj::GetPeer() { \n");
   if (sockFD_ == -1) {
     strErrorMessage_ = "can't GetPeer(), because sockFD_ = -1";
     return make_pair("", 0);
@@ -162,7 +155,6 @@ printf(" pair<string, int> SocketObj::GetPeer() { \n");
 }
 
 pair<string, int> SocketObj::GetSock() {
-printf(" pair<string, int> SocketObj::GetSock() { \n");
   if (sockFD_ == -1) {
     strErrorMessage_ = "can't GetSock(), because sockFD_ = -1";
     return make_pair("", 0);

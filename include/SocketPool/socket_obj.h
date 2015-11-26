@@ -45,12 +45,12 @@ class SocketObj {
   /**
    * 封装的Bind函数
    */
-  int Bind();
+  bool Bind();
 
   /**
    * 封装的listen函数
    */
-  int Listen();
+  bool Listen();
 
   /**
    * 封装的accept函数,由于accept函数返回一个套接字,这里直接返回int
@@ -60,12 +60,12 @@ class SocketObj {
   /**
    * 封装的connect函数
    */
-  int Connect();
+  bool Connect();
 
   /**
    * 封装的close函数
    */
-  int Close();
+  bool Close();
 
   /**
    * 获取套接字

@@ -12,7 +12,6 @@ using std::cout;
 using std::endl;
 
 ServerPool::ServerPool() {
-printf("[FILE:%s]:line:%d\n", __FILE__, __LINE__);
   //这里我使用boost来解析xml和json配置文件,也可以使用rapidxml或者rapidjson
   // 从配置文件socket.xml当中读入mysql的ip, 用户, 密码, 数据库名称,	
   boost::property_tree::ptree pt;	
@@ -71,39 +70,10 @@ printf("[FILE:%s]:line:%d\n", __FILE__, __LINE__);
       }
     }
   }
-
-  //client_map
-  BOOST_AUTO(childClient, pt.get_child("Config.Client"));
-  for (BOOST_AUTO(pos, childClient.begin()); pos!= childClient.end(); ++pos) {
-    BOOST_FOREACH(boost::property_tree::ptree::value_type &v, pos->second.get_child("")) {
-      BOOST_AUTO(nextchild, v.second.get_child(""));
-      for (BOOST_AUTO(nextpos, nextchild.begin()); nextpos!= nextchild.end(); ++nextpos) {
-  	    if (nextpos->first == "IP") clientConnectHost_ = nextpos->second.data();
-  	    if (nextpos->first == "Port") clientConnectPort_ = boost::lexical_cast<int>(nextpos->second.data());
-  	    if (nextpos->first == "Backlog") clientConnectBacklog_ = boost::lexical_cast<int>(nextpos->second.data());
-  	    if (nextpos->first == "max_connections") clientPoolSize_ = boost::lexical_cast<int>(nextpos->second.data());
-      }
-      for (int i=0; i<clientPoolSize_; ++i) {
-        SocketObjPtr conn(new SocketObj(clientConnectHost_, clientConnectPort_, clientConnectBacklog_));
-        //只有server启动了,client的connect才会成功
-        //所以要先写server_map
-        if (conn->Connect()) {
-          char stringPort[10];
-          snprintf(stringPort, sizeof(stringPort), "%d", clientConnectPort_);
-          string key = clientConnectHost_ + "###" + stringPort;
-          client_map.insert(make_pair(key, conn));
-        } else {
-      	  strErrorMessage_ = conn->ErrorMessage();
-        }
-      }
-    }
-  }
   */
-printf("[FILE:%s]:line:%d\n", __FILE__, __LINE__);
 }
   
 ServerPool::~ServerPool() {
-printf("[FILE:%s]:line:%d\n", __FILE__, __LINE__);
   //析构函数做的工作是轮询map,让每个连接都close掉
   for (multimap<string, SocketObjPtr>::iterator sIt = server_map.begin(); sIt != server_map.end(); ++sIt) {
     sIt->second->Close();
@@ -114,15 +84,26 @@ printf("[FILE:%s]:line:%d\n", __FILE__, __LINE__);
  * Dump函数,专业debug30年!
  */
 void ServerPool::Dump() const {
-  printf("");
+  printf("\n=====ServerPool Dump START ========== \n");
+  printf("serverHost_=%s ", serverHost_.c_str());
+  printf("serverPort_=%d ", serverPort_);
+  printf("serverBacklog_=%d ", serverBacklog_);
+  printf("serverPoolSize_=%d ", serverPoolSize_);
+  printf("strErrorMessage_=%s\n ", strErrorMessage_.c_str());
+  int count = 0;
+  for (auto it = server_map.begin(); it!=server_map.end(); ++it) {
+    printf("count==%d ", count);
+    it->second->Dump();
+    ++count;
+  }
+  printf("\n===ServerPool DUMP END ============\n");
 }
 
 /**
- * 从list当中选取一个连接,如果传入true,那么就从server_list当中选一个连接
+ * 从server_map当中选取一个连接
  * host和port是筛选的端口号
  */
 SocketObjPtr ServerPool::GetConnection(string host, unsigned port) {
-printf("[FILE:%s]:line:%d\n", __FILE__, __LINE__);
   // get connection operation
   unique_lock<mutex> lk(resource_mutex);
   char stringPort[10];
@@ -141,15 +122,14 @@ printf("[FILE:%s]:line:%d\n", __FILE__, __LINE__);
  * 其实严格地来说这个函数名字不应该叫做释放,而是插入,因为除了插入从池当中取出来的连接之外
  * 用户还能插入构造的连接,但是这样做没有意义
  */
-int ServerPool::ReleaseConnection(SocketObjPtr conn) {
-printf("[FILE:%s]:line:%d\n", __FILE__, __LINE__);
+bool ServerPool::ReleaseConnection(SocketObjPtr conn) {
   unique_lock<mutex> lk(resource_mutex);
   pair<string, int> sockPair = conn->GetSock();
   char stringPort[10];
   snprintf(stringPort, sizeof(stringPort), "%d", sockPair.second);
   string key = sockPair.first + "###" + stringPort;
   server_map.insert(make_pair(key, conn));
-  return 1;
+  return true;
 }
 
 /**

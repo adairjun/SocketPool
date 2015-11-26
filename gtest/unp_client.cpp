@@ -85,7 +85,7 @@ int main(int argc, char** argv) {
   google::InitGoogleLogging(argv[0]);
   FLAGS_log_dir = "../log";  
   SocketObj sock(HOST, PORT, BACKLOG);
-  if (sock.Connect()<0) {
+  if (sock.Connect() == false) {
     cerr << "Connect error" << endl;
   }
   str_cli(sock.Get());
