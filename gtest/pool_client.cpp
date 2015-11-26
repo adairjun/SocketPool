@@ -21,12 +21,10 @@ char recvline[MAXLINE];
 // 初始化全局的socket连接池
 static ClientPoolPtr clientpool_ptr(new ClientPool);
 
-void read_event(int fd, short events, void* arg); 
-void read_stdin(struct bufferevent *bev, void *arg);
+void read_stdin(int fd, short events, void* arg); 
 void read_socket(struct bufferevent *bev, void *arg);
-void write_socket(struct bufferevent *bev, void *arg);
-void write_stdout(struct bufferevent *bev, void *arg);
 void error_cb(struct bufferevent *bev, short event, void *arg);
+
 
 int main(int argc, char** argv) {
   // 使用glog来打日志,除错
@@ -34,8 +32,7 @@ int main(int argc, char** argv) {
   FLAGS_log_dir = "../log";  
   //从连接池当中取出端口号为9999的连接
   SocketObjPtr clienter = clientpool_ptr->GetConnection(HOST, PORT);
-  //==========================================================
-  //从这里开始写client代码
+  //========================================================== //从这里开始写client代码
   int clientfd = clienter->Get();
   struct event_base* base = event_base_new();
   assert(base != NULL);
@@ -44,12 +41,12 @@ int main(int argc, char** argv) {
   struct bufferevent* bev_socket = bufferevent_socket_new(base, clientfd, BEV_OPT_CLOSE_ON_FREE);
   //read_socket从socket读入, write_stdout写出到标准输出
   //所以这里需要传入参数clientfd
-  bufferevent_setcb(bev_socket, read_socket, write_stdout, error_cb, (void*)&clientfd);
+  bufferevent_setcb(bev_socket, read_socket, NULL, error_cb, (void*)&clientfd);
   //还记得unp_server当中的删除EPOLLIN事件吗?我当时说的是也可以不删除,只要是read失败了再删除
-  bufferevent_enable(bev_socket, EV_READ|EV_WRITE|EV_PERSIST); 
+  bufferevent_enable(bev_socket, EV_READ|EV_PERSIST); 
 
   //监听终端输入事件
-  struct event* ev_cmd = event_new(base, STDIN_FILENO, EV_READ|EV_PERSIST, read_event, (void*)bev_socket); 
+  struct event* ev_cmd = event_new(base, STDIN_FILENO, EV_READ|EV_PERSIST, read_stdin, (void*)bev_socket); 
   event_add(ev_cmd, NULL);
 
   event_base_dispatch(base);
@@ -63,7 +60,7 @@ int main(int argc, char** argv) {
   return 0;
 }
 
-void read_event(int fd, short events, void* arg) {
+void read_stdin(int fd, short events, void* arg) {
   int ret = read(fd, sendline, MAXLINE);
   struct bufferevent* bev = (struct bufferevent*) arg;
   //write(clientfd, sendline, strlen(sendline));
@@ -71,34 +68,8 @@ void read_event(int fd, short events, void* arg) {
   memset(sendline, 0, sizeof(sendline));
 }
 
-void read_stdin(struct bufferevent *bev, void *arg) {
-  int n;
-  evutil_socket_t fd = bufferevent_getfd(bev);
-  //将标准输入读入到sendline缓冲区
-  while (n=bufferevent_read(bev, sendline, MAXLINE), n>0) {
-  }  
-}
-
-void write_socket(struct bufferevent *bev, void *arg) { 
-  int* clientfdPtr = (int*)arg;
-  int clientfd = *clientfdPtr;
-  //int n=bufferevent_write(/*这个不能是bev*/, sendline, sizeof(sendline));
-  write(clientfd, sendline, strlen(sendline));
-  memset(sendline, 0, sizeof(sendline));
-  //n要大于0 
-}
-
 void read_socket(struct bufferevent *bev, void *arg) {
-  int n;
-  evutil_socket_t fd = bufferevent_getfd(bev);
-  //将socket读入到recvline缓冲区
-  while (n=bufferevent_read(bev, recvline, MAXLINE), n>0) {
-  }  
-}
-
-void write_stdout(struct bufferevent *bev, void *arg) { 
-  //int n=bufferevent_write(, sendline, sizeof(sendline));
-  //不能用bufferevent_write输出,因为不知道bev
+  int len = bufferevent_read(bev, recvline, sizeof(recvline));
   fputs(recvline, stdout);
   //把recvline打印到屏幕上之后,需要清空recvline,否则下次打印到屏幕的时候会有本地recvline的残留
   memset(recvline, 0, sizeof(recvline));
