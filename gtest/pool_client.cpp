@@ -21,6 +21,7 @@ char recvline[MAXLINE];
 // 初始化全局的socket连接池
 static ClientPoolPtr clientpool_ptr(new ClientPool);
 
+void read_event(int fd, short events, void* arg); 
 void read_stdin(struct bufferevent *bev, void *arg);
 void read_socket(struct bufferevent *bev, void *arg);
 void write_socket(struct bufferevent *bev, void *arg);
@@ -38,15 +39,6 @@ int main(int argc, char** argv) {
   int clientfd = clienter->Get();
   struct event_base* base = event_base_new();
   assert(base != NULL);
-  //直接用bufferevent,不用libevent
-  //首先bufferevent监听标准输入
-  struct bufferevent* bev_stdin = bufferevent_socket_new(base, STDIN_FILENO, BEV_OPT_CLOSE_ON_FREE);
-  //这里设置好当需要读写和错误发生的回调函数
-  //read_stdin从stdin读入,write_socket向socket写出
-  //所以这里需要传入参数clientfd
-  bufferevent_setcb(bev_stdin, read_stdin, write_socket, error_cb, (void*)&clientfd);
-  //还记得unp_server当中的删除EPOLLIN事件吗?我当时说的是也可以不删除,只要是read失败了再删除
-  bufferevent_enable(bev_stdin, EV_READ|EV_WRITE|EV_PERSIST); 
 
   //bufferevent监听clientfd
   struct bufferevent* bev_socket = bufferevent_socket_new(base, clientfd, BEV_OPT_CLOSE_ON_FREE);
@@ -56,16 +48,27 @@ int main(int argc, char** argv) {
   //还记得unp_server当中的删除EPOLLIN事件吗?我当时说的是也可以不删除,只要是read失败了再删除
   bufferevent_enable(bev_socket, EV_READ|EV_WRITE|EV_PERSIST); 
 
+  //监听终端输入事件
+  struct event* ev_cmd = event_new(base, STDIN_FILENO, EV_READ|EV_PERSIST, read_event, (void*)bev_socket); 
+  event_add(ev_cmd, NULL);
+
   event_base_dispatch(base);
 
   //事件循环结束,清理bufferevent和event
-  bufferevent_free(bev_stdin);
   bufferevent_free(bev_socket);
   event_base_free(base);
   //==========================================================
 
   clientpool_ptr->ReleaseConnection(clienter);
   return 0;
+}
+
+void read_event(int fd, short events, void* arg) {
+  int ret = read(fd, sendline, MAXLINE);
+  struct bufferevent* bev = (struct bufferevent*) arg;
+  //write(clientfd, sendline, strlen(sendline));
+  bufferevent_write(bev, sendline, strlen(sendline));
+  memset(sendline, 0, sizeof(sendline));
 }
 
 void read_stdin(struct bufferevent *bev, void *arg) {

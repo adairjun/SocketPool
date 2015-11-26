@@ -33,21 +33,15 @@ void error_cb(struct bufferevent *bev, short event, void *arg);
 int main(int argc, char** argv) {
   // 使用glog来打日志,除错
   google::InitGoogleLogging(argv[0]);
-cout << "1111111111111111111" << endl;
-serverpool_ptr->Dump();
   FLAGS_log_dir = "../log";  
   //从连接池当中取出端口号为9999的连接
   SocketObjPtr listener = serverpool_ptr->GetConnection(HOST, PORT);
-cout << "2222222222222222" << endl;
-listener->Dump();
   //==========================================================
   //从这里开始写server代码
   int listenfd = listener->Get();
-cout << "333333333333333" << endl;
   //这里不用epoll了,而是使用封装了epoll的libevent
   //因为这个socket连接池的代码还不需要那么极致的性能
   struct event_base* base = event_base_new();
-cout << "4444444444444444" << endl;
   //仅仅这一条语句就相当于 int efd = epoll_create(FDSIZE); struct epoll_event ev[EPOLLEVENTS]; 这两条语句
   //可见epoll的语法要比select简洁,而libevent的语法又比epoll简洁
   assert(base != NULL);
@@ -55,7 +49,6 @@ cout << "4444444444444444" << endl;
   mbs.socketPtr = listener;
   mbs.base = base;
   struct event* listen_event = event_new(base, listenfd, EV_READ|EV_PERSIST, do_accept, (void*)&mbs);
-cout << "55555555555555" << endl;
   //仅仅这一条语句就相当于 struct epoll_event tmp; tmp.events = EPOLLIN; tmp.data.fd = listenfd;这三条语句,其中EV_READ就相当于EPOLLIN,
   //EV_PERSIST这个属性的话,如果不指定这个属性,回调函数被触发之后事件会被删除,这可是梦寐以求的特性啊,还记得在unp_server当中从客户端read之后要删除EPOLLIN事件吗,使用这个特性能简化掉那些代码,关键是能够避免忘记删除EPOLLIN事件产生的错误  
   //由于在回调函数中需要使用SocketObjPtr,这里我定义一个新的结构体mybase
@@ -65,16 +58,13 @@ cout << "55555555555555" << endl;
   //在unp_server当中,这里本来应该定义char buf[MAXLINE];我把它写成全局的
   //这里相比unp_server连while (true)的大循环都省了
   event_base_dispatch(base);
-cout << "6666666666666666" << endl;
 
   //事件循环结束,清理bufferevent和event
   event_base_free(base);
-cout << "77777777777777777" << endl;
   //==========================================================
   //==========================================================
 
   serverpool_ptr->ReleaseConnection(listener);
-cout << "88888888888888888" << endl;
   return 0;
 }
 
