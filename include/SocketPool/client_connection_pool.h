@@ -24,6 +24,8 @@ class ClientPool {
   ClientPool& operator=(const ClientPool&) = delete;
 
   void Dump() const;
+
+  bool Empty() const;
   /**
    * 从list当中选取一个连接
    * host和port是筛选的端口号

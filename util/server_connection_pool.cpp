@@ -99,6 +99,17 @@ void ServerPool::Dump() const {
   printf("\n===ServerPool DUMP END ============\n");
 }
 
+bool ServerPool::Empty() const {
+  int count = 0;
+  for (auto it = server_map.begin(); it!=server_map.end(); ++it) {
+    ++count;
+  }
+  if (count == 0) {
+    return true;
+  }
+  return false;
+}
+
 /**
  * 从server_map当中选取一个连接
  * host和port是筛选的端口号

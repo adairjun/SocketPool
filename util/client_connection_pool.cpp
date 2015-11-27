@@ -106,6 +106,17 @@ void ClientPool::Dump() const {
   printf("\n===ClientPool DUMP END ============\n");
 }
 
+bool ClientPool::Empty() const {
+  int count = 0;
+  for (auto it = client_map.begin(); it!=client_map.end(); ++it) {
+    ++count;
+  }
+  if (count == 0) {
+    return true;
+  }
+  return false;
+}
+
 /**
  * 从map当中选取一个连接
  * host和port是筛选的端口号
