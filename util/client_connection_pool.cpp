@@ -107,10 +107,7 @@ void ClientPool::Dump() const {
 }
 
 bool ClientPool::Empty() const {
-  if (client_map.size() == 0) {
-    return true;
-  }
-  return false;
+  return client_map.empty();
 }
 
 /**
