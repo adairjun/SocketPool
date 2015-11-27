@@ -100,11 +100,7 @@ void ServerPool::Dump() const {
 }
 
 bool ServerPool::Empty() const {
-  int count = 0;
-  for (auto it = server_map.begin(); it!=server_map.end(); ++it) {
-    ++count;
-  }
-  if (count == 0) {
+  if (server_map.size() == 0) {
     return true;
   }
   return false;
