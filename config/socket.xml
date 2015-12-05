@@ -24,14 +24,11 @@
             <!-- client与server又不一样,因为多个client可以同时连接一个端口 -->
             <!-- 所以这里的max_connections就是同一个端口的连接数目 -->
             <Port>9998</Port> 
-            <!-- client根本不需要backlog -->
-            <Backlog>0</Backlog>
 		    <max_connections>1</max_connections>
         </Connection>
         <Connection>
             <IP>127.0.0.1</IP>
             <Port>9999</Port> 
-            <Backlog>0</Backlog>
 		    <max_connections>2</max_connections>
         </Connection>
 	</Client> 
