@@ -86,12 +86,6 @@ class SocketObj {
   pair<string, int> GetSock();
 
  private:
-  typedef struct {
-    time_t timeout;         //超时值
-    string strHead;         //消息头 
-    string strData;         //消息的数据
-  } msg_;
-
   // 通过socket函数构建的套接字
   int sockFD_;
  

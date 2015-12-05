@@ -84,7 +84,7 @@ int main(int argc, char** argv) {
   // 使用glog来打日志,除错
   google::InitGoogleLogging(argv[0]);
   FLAGS_log_dir = "../log";  
-  SocketObj sock(HOST, PORT, BACKLOG);
+  SocketObj sock(HOST, PORT);
   if (sock.Connect() == false) {
     cerr << "Connect error" << endl;
   }
