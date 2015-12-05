@@ -53,7 +53,6 @@ class ClientPool {
   //这里是client连接的服务器的地址,所以除了clientPoolSize_,其他的都不能用client来命名
   string clientConnectHost_;
   unsigned clientConnectPort_;
-  int clientConnectBacklog_;
   int clientPoolSize_;
 
   //错误信息

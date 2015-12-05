@@ -24,6 +24,7 @@ class SocketObj {
  public:
   // 虽然作为client的话.backlog用不到,但是这里还是要写入构造函数当中
   explicit SocketObj(string host, unsigned port, int backlog);
+  explicit SocketObj(string host, unsigned port);
   explicit SocketObj(int sockFD);
   virtual ~SocketObj();
   void Dump() const;

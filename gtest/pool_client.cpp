@@ -25,7 +25,6 @@ void read_stdin(int fd, short events, void* arg);
 void read_socket(struct bufferevent *bev, void *arg);
 void error_cb(struct bufferevent *bev, short event, void *arg);
 
-
 int main(int argc, char** argv) {
   // 使用glog来打日志,除错
   google::InitGoogleLogging(argv[0]);

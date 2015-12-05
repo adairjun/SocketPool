@@ -25,14 +25,13 @@ ClientPool::ClientPool() {
     for (BOOST_AUTO(nextpos, nextchild.begin()); nextpos!= nextchild.end(); ++nextpos) {
   	  if (nextpos->first == "IP") clientConnectHost_ = nextpos->second.data();
   	  if (nextpos->first == "Port") clientConnectPort_ = boost::lexical_cast<int>(nextpos->second.data());
-  	  if (nextpos->first == "Backlog") clientConnectBacklog_ = boost::lexical_cast<int>(nextpos->second.data());
   	  if (nextpos->first == "max_connections") clientPoolSize_ = boost::lexical_cast<int>(nextpos->second.data());
     }
     // 构造函数的作用就是根据poolSize的大小来构造多个映射
     // 每个映射的连接都是同样的host,port,backlog
     
     for (int i=0; i<clientPoolSize_; ++i) {
-      SocketObjPtr conn(new SocketObj(clientConnectHost_, clientConnectPort_, clientConnectBacklog_));
+      SocketObjPtr conn(new SocketObj(clientConnectHost_, clientConnectPort_));
       //只有server启动了,client的connect才会成功
       if (conn->Connect()) {
         char stringPort[10];
@@ -59,11 +58,10 @@ ClientPool::ClientPool() {
       for (BOOST_AUTO(nextpos, nextchild.begin()); nextpos!= nextchild.end(); ++nextpos) {
   	    if (nextpos->first == "IP") clientConnectHost_ = nextpos->second.data();
   	    if (nextpos->first == "Port") clientConnectPort_ = boost::lexical_cast<int>(nextpos->second.data());
-  	    if (nextpos->first == "Backlog") clientConnectBacklog_ = boost::lexical_cast<int>(nextpos->second.data());
   	    if (nextpos->first == "max_connections") clientPoolSize_ = boost::lexical_cast<int>(nextpos->second.data());
       }
       for (int i=0; i<clientPoolSize_; ++i) {
-        SocketObjPtr conn(new SocketObj(clientConnectHost_, clientConnectPort_, clientConnectBacklog_));
+        SocketObjPtr conn(new SocketObj(clientConnectHost_, clientConnectPort_));
         //只有server启动了,client的connect才会成功
         if (conn->Connect()) {
           char stringPort[10];
@@ -94,7 +92,6 @@ void ClientPool::Dump() const {
   printf("\n=====ClientPool Dump START ========== \n");
   printf("clientConnectHost_=%s ", clientConnectHost_.c_str());
   printf("clientConnectPort_=%d ", clientConnectPort_);
-  printf("clientConnectBacklog_=%d ", clientConnectBacklog_);
   printf("clientPoolSize_=%d ", clientPoolSize_);
   printf("strErrorMessage_=%s\n ", strErrorMessage_.c_str());
   int count = 0;

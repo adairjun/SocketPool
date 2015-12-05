@@ -19,6 +19,15 @@ SocketObj::SocketObj(string host, unsigned port, int backlog)
     sockFD_ = -1;
 } 
 
+SocketObj::SocketObj(string host, unsigned port)
+    : strHost_(host),
+      iPort_(port) {
+    LOG(INFO) << "consutor function HOST:[" << host << "]" 
+              << " PORT:[" << port << "]"; 
+    backlog_ = 0;
+    sockFD_ = -1;
+} 
+
 SocketObj::SocketObj(int sockFD)
     : sockFD_(sockFD) {
     strHost_ = "";
