@@ -27,6 +27,8 @@ class SocketObj {
   explicit SocketObj(string host, unsigned port);
   explicit SocketObj(int sockFD);
   virtual ~SocketObj();
+  SocketObj(const SocketObj&) = delete;
+  SocketObj& operator=(const SocketObj&) = delete;
   void Dump() const;
 
   string ErrorMessage();
