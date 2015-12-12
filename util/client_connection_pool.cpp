@@ -1,35 +1,24 @@
 #include "SocketPool/client_connection_pool.h"
+#include "SocketPool/parse_xml.h"
+#include "SocketPool/parse_json.h"
 #include <iostream>
 #include <stdlib.h>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/xml_parser.hpp>
-#include <boost/property_tree/json_parser.hpp>
-#include <boost/typeof/typeof.hpp>
-#include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 
 using std::cout;
 using std::endl;
 
 ClientPool::ClientPool() {
-  //这里我使用boost来解析xml和json配置文件,也可以使用rapidxml或者rapidjson
-  // 从配置文件socket.xml当中读入mysql的ip, 用户, 密码, 数据库名称,	
-  boost::property_tree::ptree pt;	
-  const char* xml_path = "../config/socket.xml";	
-  boost::property_tree::read_xml(xml_path, pt);
-  
-  //client_map
-  BOOST_AUTO(childClient, pt.get_child("Config.Client"));
-  for (BOOST_AUTO(pos, childClient.begin()); pos!= childClient.end(); ++pos) {
-    BOOST_AUTO(nextchild, pos->second.get_child(""));
-    for (BOOST_AUTO(nextpos, nextchild.begin()); nextpos!= nextchild.end(); ++nextpos) {
-  	  if (nextpos->first == "IP") clientConnectHost_ = nextpos->second.data();
-  	  if (nextpos->first == "Port") clientConnectPort_ = boost::lexical_cast<int>(nextpos->second.data());
-  	  if (nextpos->first == "max_connections") clientPoolSize_ = boost::lexical_cast<int>(nextpos->second.data());
-    }
-    // 构造函数的作用就是根据poolSize的大小来构造多个映射
-    // 每个映射的连接都是同样的host,port,backlog
-    
+  ParseXmlObj myXml("../config/socket.xml");
+  vector<map<string, string> > result_array = myXml.GetChildDataArray("Config.Client"); 
+  //  这段注释的代码是读取json配置文件的
+  //ParseJsonObj myJson("../config/socket.json");
+  //vector<map<string, string> > result_array = myJson.GetChildDataArray("Config.Client.Connection"); 
+  for (auto key_value_map : result_array) {
+    clientConnectHost_ = key_value_map["IP"];
+    clientConnectPort_ = boost::lexical_cast<int>(key_value_map["Port"]);
+    clientPoolSize_ = boost::lexical_cast<int>(key_value_map["max_connections"]);
+
     for (int i=0; i<clientPoolSize_; ++i) {
       SocketObjPtr conn(new SocketObj(clientConnectHost_, clientConnectPort_));
       //只有server启动了,client的connect才会成功
@@ -39,9 +28,9 @@ ClientPool::ClientPool() {
         string key = clientConnectHost_ + "###" + stringPort;
         client_map.insert(make_pair(key, conn));
       } else {
-    	strErrorMessage_ = conn->ErrorMessage();
-      }
-    }
+        strErrorMessage_ = conn->ErrorMessage();
+      }   
+    }   
   }
 
   /**

@@ -1,34 +1,23 @@
 #include "SocketPool/server_connection_pool.h"
+#include "SocketPool/parse_xml.h"
+#include "SocketPool/parse_json.h"
 #include <iostream>
 #include <stdlib.h>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/xml_parser.hpp>
-#include <boost/property_tree/json_parser.hpp>
-#include <boost/typeof/typeof.hpp>
-#include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 
 using std::cout;
 using std::endl;
 
 ServerPool::ServerPool() {
-  //这里我使用boost来解析xml和json配置文件,也可以使用rapidxml或者rapidjson
-  // 从配置文件socket.xml当中读入mysql的ip, 用户, 密码, 数据库名称,	
-  boost::property_tree::ptree pt;	
-  const char* xml_path = "../config/socket.xml";	
-  boost::property_tree::read_xml(xml_path, pt);
-  
-  // 先做好server_map
-  BOOST_AUTO(child, pt.get_child("Config.Server"));
-  for (BOOST_AUTO(pos, child.begin()); pos!= child.end(); ++pos) {
-    BOOST_AUTO(nextchild, pos->second.get_child(""));
-    for (BOOST_AUTO(nextpos, nextchild.begin()); nextpos!= nextchild.end(); ++nextpos) {
-  	  if (nextpos->first == "IP") serverHost_ = nextpos->second.data();
-  	  if (nextpos->first == "Port") serverPort_ = boost::lexical_cast<unsigned>(nextpos->second.data());
-  	  if (nextpos->first == "Backlog") serverBacklog_ = boost::lexical_cast<int>(nextpos->second.data());
-    }
-    // 构造函数的作用就是根据poolSize的大小来构造多个映射
-    // 每个映射的连接都是同样的host,port,backlog
+  ParseXmlObj myXml("../config/socket.xml");
+  vector<map<string, string> > result_array = myXml.GetChildDataArray("Config.Server"); 
+  //  这段注释的代码是读取json配置文件的
+  //ParseJsonObj myJson("../config/socket.json");
+  //vector<map<string, string> > result_array = myJson.GetChildDataArray("Config.Server.Connection"); 
+  for (auto key_value_map : result_array) {
+    serverHost_ = key_value_map["IP"];
+    serverPort_ = boost::lexical_cast<int>(key_value_map["Port"]);
+    serverBacklog_ = boost::lexical_cast<int>(key_value_map["Backlog"]);
 
     SocketObjPtr conn(new SocketObj(serverHost_, serverPort_, serverBacklog_));
     //Listen()当中已经封装了bind
@@ -42,6 +31,40 @@ ServerPool::ServerPool() {
       strErrorMessage_ = conn->ErrorMessage();
     }
   }
+
+
+
+
+  //这里我使用boost来解析xml和json配置文件,也可以使用rapidxml或者rapidjson
+  // 从配置文件socket.xml当中读入mysql的ip, 用户, 密码, 数据库名称,	
+//  boost::property_tree::ptree pt;	
+//  const char* xml_path = "../config/socket.xml";	
+//  boost::property_tree::read_xml(xml_path, pt);
+//  
+//  // 先做好server_map
+//  BOOST_AUTO(child, pt.get_child("Config.Server"));
+//  for (BOOST_AUTO(pos, child.begin()); pos!= child.end(); ++pos) {
+//    BOOST_AUTO(nextchild, pos->second.get_child(""));
+//    for (BOOST_AUTO(nextpos, nextchild.begin()); nextpos!= nextchild.end(); ++nextpos) {
+//  	  if (nextpos->first == "IP") serverHost_ = nextpos->second.data();
+//  	  if (nextpos->first == "Port") serverPort_ = boost::lexical_cast<unsigned>(nextpos->second.data());
+//  	  if (nextpos->first == "Backlog") serverBacklog_ = boost::lexical_cast<int>(nextpos->second.data());
+//    }
+//    // 构造函数的作用就是根据poolSize的大小来构造多个映射
+//    // 每个映射的连接都是同样的host,port,backlog
+//
+//    SocketObjPtr conn(new SocketObj(serverHost_, serverPort_, serverBacklog_));
+//    //Listen()当中已经封装了bind
+//    if (conn->Listen()) {
+//      //在insert之前需要先把ip和端口号整合成key,先对端口号做处理,把int转为string
+//      char stringPort[10];
+//      snprintf(stringPort, sizeof(stringPort), "%d", serverPort_);
+//      string key = serverHost_ + "###" + stringPort;
+//      server_map.insert(make_pair(key, conn));
+//    } else {
+//      strErrorMessage_ = conn->ErrorMessage();
+//    }
+//  }
 
   /**
    * 由于json当中使用数组来保存Connection,这里不能通用代码

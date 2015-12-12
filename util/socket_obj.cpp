@@ -45,7 +45,7 @@ void SocketObj::Dump() const {
   printf("strHost_=%s", strHost_.c_str());
   printf("iPort_=%d", iPort_);
   printf("backlog_=%d", backlog_);
-  printf("strErrorMessage_=%d", strErrorMessage_.c_str());
+  printf("strErrorMessage_=%s", strErrorMessage_.c_str());
   printf("\n===SocketObj DUMP END ============\n");
 }
 
