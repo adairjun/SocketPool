@@ -2,26 +2,27 @@
 #include <boost/property_tree/json_parser.hpp>
 
 
-ParseJsonObj::ParseJsonObj() {
+ParseJsonObj::ParseJsonObj() 
+    : pt_(new ptree) {
     configPath_ = "../config/messageQueue.json";
-    pt_ = new ptree;
+    //pt_ = new ptree;
     boost::property_tree::read_json(configPath_, *pt_);
 }
 
 ParseJsonObj::ParseJsonObj(string configPath)
-    : configPath_(configPath){
-	pt_ = new ptree;
+    : configPath_(configPath), pt_(new ptree) {
+	//pt_ = new ptree;
 	boost::property_tree::read_json(configPath_, *pt_);
 }
 
 ParseJsonObj::~ParseJsonObj() {
-  delete pt_;
+  //delete pt_;
 }
 
 void ParseJsonObj::Dump() const {
   printf("\n=====ParseJsonObj Dump START ========== \n");
   printf("configPath__=%s ", configPath_.c_str());
-  printf("pt_=%p ", pt_);
+  //printf("pt_=%p ", pt_);
   printf("\n===ParseJsonObj DUMP END ============\n");
 }
 
@@ -29,7 +30,7 @@ string ParseJsonObj::GetConfigPath() const {
   return configPath_;
 }
 
-ptree* ParseJsonObj::GetPtree() const {
+ptreePtr ParseJsonObj::GetPtree() const {
   return pt_;
 }
 

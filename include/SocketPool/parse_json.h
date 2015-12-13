@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <boost/shared_ptr.hpp>
 #include <boost/property_tree/ptree.hpp>
 
 using std::string;
@@ -16,6 +17,8 @@ using std::vector;
 using std::map;
 using std::make_pair;
 using boost::property_tree::ptree;
+
+typedef boost::shared_ptr<boost::property_tree::ptree> ptreePtr;
 
 class ParseJsonObj {
  public:
@@ -28,7 +31,7 @@ class ParseJsonObj {
 
   string GetConfigPath() const;
 
-  ptree* GetPtree() const;
+  ptreePtr GetPtree() const;
 
   /*
    * GetChildData("root.child.a") will get "a" 
@@ -168,7 +171,9 @@ class ParseJsonObj {
  private:
   string configPath_; 
   //这里不用ptree对象而用指针的意义在于如果使用ptree对象的话，构造的时候就必须完全构造这个对象
-  ptree* pt_;
+  ptreePtr pt_;
+  //ptree* pt_;
 };
 
+typedef boost::shared_ptr<ParseJsonObj> ParseJsonObjPtr;
 #endif /* MQPOOL_INCLUDE_PARSE_JSON_H */

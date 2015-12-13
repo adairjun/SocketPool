@@ -2,26 +2,27 @@
 #include <boost/property_tree/xml_parser.hpp>
 
 
-ParseXmlObj::ParseXmlObj() {
+ParseXmlObj::ParseXmlObj() 
+    : pt_(new ptree) {
     configPath_ = "../config/messageQueue.xml";
-    pt_ = new ptree;
+    //pt_ = new ptree;
     boost::property_tree::read_xml(configPath_, *pt_);
 }
 
 ParseXmlObj::ParseXmlObj(string configPath)
-    : configPath_(configPath){
-	pt_ = new ptree;
+    : configPath_(configPath), pt_(new ptree) {
+    //pt_ = new ptree;
 	boost::property_tree::read_xml(configPath_, *pt_);
 }
 
 ParseXmlObj::~ParseXmlObj() {
-  delete pt_;
+  //delete pt_;
 }
 
 void ParseXmlObj::Dump() const {
   printf("\n=====ParseXmlObj Dump START ========== \n");
   printf("configPath__=%s ", configPath_.c_str());
-  printf("pt_=%p ", pt_);
+  //printf("pt_=%p ", pt_);
   printf("\n===ParseXMlObj DUMP END ============\n");
 }
 
@@ -29,7 +30,7 @@ string ParseXmlObj::GetConfigPath() const {
 	return configPath_;
 }
 
-ptree* ParseXmlObj::GetPtree() const {
+ptreePtr ParseXmlObj::GetPtree() const {
 	return pt_;
 }
 
