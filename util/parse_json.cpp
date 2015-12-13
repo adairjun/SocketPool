@@ -4,7 +4,7 @@
 
 ParseJsonObj::ParseJsonObj() 
     : pt_(new ptree) {
-    configPath_ = "../config/messageQueue.json";
+    configPath_ = "../config/socket.json";
     //pt_ = new ptree;
     boost::property_tree::read_json(configPath_, *pt_);
 }

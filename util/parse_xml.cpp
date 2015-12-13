@@ -4,7 +4,7 @@
 
 ParseXmlObj::ParseXmlObj() 
     : pt_(new ptree) {
-    configPath_ = "../config/messageQueue.xml";
+    configPath_ = "../config/socket.xml";
     //pt_ = new ptree;
     boost::property_tree::read_xml(configPath_, *pt_);
 }
