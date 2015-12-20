@@ -1,0 +1,32 @@
+LogLevel[INFO]-----Time:[2015-12-20 17:52:39]
+FILE:[util/socket_obj.cpp]-----LINE:[16]
+consutor function HOST:[] PORT:[9999] BACKLOG:[10]
+LogLevel[INFO]-----Time:[2015-12-20 17:52:43]
+FILE:[util/socket_obj.cpp]-----LINE:[25]
+consutor function HOST:[127.0.0.1] PORT:[9999]
+LogLevel[ERROR]-----Time:[2015-12-20 17:52:52]
+FILE:[gtest/unp_server.cpp]-----LINE:[74]
+client close.
+LogLevel[INFO]-----Time:[2015-12-20 17:53:00]
+FILE:[util/socket_obj.cpp]-----LINE:[16]
+consutor function HOST:[127.0.0.1] PORT:[9998] BACKLOG:[10]
+LogLevel[INFO]-----Time:[2015-12-20 17:53:00]
+FILE:[util/socket_obj.cpp]-----LINE:[16]
+consutor function HOST:[127.0.0.1] PORT:[9999] BACKLOG:[10]
+LogLevel[INFO]-----Time:[2015-12-20 17:53:03]
+FILE:[util/socket_obj.cpp]-----LINE:[25]
+consutor function HOST:[127.0.0.1] PORT:[9998]
+LogLevel[INFO]-----Time:[2015-12-20 17:53:03]
+FILE:[util/socket_obj.cpp]-----LINE:[25]
+consutor function HOST:[127.0.0.1] PORT:[9999]
+LogLevel[INFO]-----Time:[2015-12-20 17:53:03]
+FILE:[util/socket_obj.cpp]-----LINE:[25]
+consutor function HOST:[127.0.0.1] PORT:[9999]
+LogLevel[ERROR]-----Time:[2015-12-20 17:53:09]
+FILE:[gtest/pool_server.cpp]-----LINE:[108]
+Client closed
+
+LogLevel[ERROR]-----Time:[2015-12-20 17:53:09]
+FILE:[gtest/pool_server.cpp]-----LINE:[108]
+Client closed
+

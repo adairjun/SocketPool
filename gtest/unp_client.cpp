@@ -56,7 +56,7 @@ void str_cli(int sockfd) {
         if (ev_fd == STDIN_FILENO) {
           //说明STDIN_FILENO可用,那么现在就从STDIN_FILENO读取数据到sendline
           if (fgets(sendline, MAXLINE, stdin) == NULL) {
-            LOG(ERROR) << "fgets error" << endl;
+            LOG(ERROR) << "fgets error";
           }         
           //从STDIN_FILENO读取完成后,就准备向socket写数据 
           write(sockfd, sendline, strlen(sendline));
@@ -64,7 +64,7 @@ void str_cli(int sockfd) {
         if (ev_fd == sockfd) { 
           //说明sockfd可用,那么就需要从sockfd读入数据
           if (read(sockfd, recvline, MAXLINE) < 0) {
-            LOG(ERROR) << "read error" << endl;
+            LOG(ERROR) << "read error";
             //或者是直接在这里删掉socket的EPOLLIN
             tmp.events = EPOLLIN;
             tmp.data.fd = sockfd;   
@@ -81,9 +81,6 @@ void str_cli(int sockfd) {
 }
 
 int main(int argc, char** argv) {
-  // 使用glog来打日志,除错
-  google::InitGoogleLogging(argv[0]);
-  FLAGS_log_dir = "../log";  
   SocketObj sock(HOST, PORT);
   if (sock.Connect() == false) {
     cerr << "Connect error" << endl;

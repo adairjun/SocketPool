@@ -6,10 +6,11 @@
 #ifndef SOCKETPOOL_INCLUDE_SOCKET_OBJ_H
 #define SOCKETPOOL_INCLUDE_SOCKET_OBJ_H
 
+#include "logobj.h"
 #include <string>
 #include <utility>
 #include <boost/shared_ptr.hpp>
-#include <glog/logging.h>
+//#include <glog/logging.h>
 
 using std::string;
 using std::pair;

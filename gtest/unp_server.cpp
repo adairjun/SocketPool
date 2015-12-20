@@ -66,12 +66,12 @@ void str_echo(SocketObj listener) {
 //这里也和客户端一样,从ev_fd读入之后要删除掉
 //或者可以不删除,只要是read失败再删除
           if (n == -1) {
-            LOG(ERROR) << "read error." << endl;
+            LOG(ERROR) << "read error.";
               tmp.events = EPOLLIN;
               tmp.data.fd = ev_fd;
               epoll_ctl(efd, EPOLL_CTL_DEL, ev_fd, &tmp);
           } else if (n == 0) {
-           LOG(ERROR) << "client close." << endl; 
+           LOG(ERROR) << "client close."; 
              tmp.events = EPOLLIN;
              tmp.data.fd = ev_fd;
              epoll_ctl(efd, EPOLL_CTL_DEL, ev_fd, &tmp);
@@ -87,8 +87,6 @@ void str_echo(SocketObj listener) {
 
 int main(int argc, char** argv) {
   // 使用glog来打日志,除错
-  google::InitGoogleLogging(argv[0]);
-  FLAGS_log_dir = "../log";  
   SocketObj listener(HOST, PORT, BACKLOG);
   if (listener.Listen() == false) {
     cerr << "Sorry, listen error!" << endl;

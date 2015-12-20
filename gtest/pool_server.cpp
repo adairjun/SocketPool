@@ -31,9 +31,6 @@ void write_cb(struct bufferevent *bev, void *arg);
 void error_cb(struct bufferevent *bev, short event, void *arg);
 
 int main(int argc, char** argv) {
-  // 使用glog来打日志,除错
-  google::InitGoogleLogging(argv[0]);
-  FLAGS_log_dir = "../log";  
   //从连接池当中取出端口号为9999的连接
   if (!serverpool_ptr->Empty()) {
     SocketObjPtr listener = serverpool_ptr->GetConnection(HOST, PORT);
