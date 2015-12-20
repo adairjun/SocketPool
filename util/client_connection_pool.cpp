@@ -32,38 +32,6 @@ ClientPool::ClientPool() {
       }   
     }   
   }
-
-  /**
-   * 由于json当中使用数组来保存Connection,这里不能通用代码
-   * 这段注释的代码是读取json配置文件的
-  const char* json_path = "../config/socket.json";
-  boost::property_tree::read_json(json_path, pt);
-
-  //client_map
-  BOOST_AUTO(childClient, pt.get_child("Config.Client"));
-  for (BOOST_AUTO(pos, childClient.begin()); pos!= childClient.end(); ++pos) {
-    BOOST_FOREACH(boost::property_tree::ptree::value_type &v, pos->second.get_child("")) {
-      BOOST_AUTO(nextchild, v.second.get_child(""));
-      for (BOOST_AUTO(nextpos, nextchild.begin()); nextpos!= nextchild.end(); ++nextpos) {
-  	    if (nextpos->first == "IP") clientConnectHost_ = nextpos->second.data();
-  	    if (nextpos->first == "Port") clientConnectPort_ = boost::lexical_cast<int>(nextpos->second.data());
-  	    if (nextpos->first == "max_connections") clientPoolSize_ = boost::lexical_cast<int>(nextpos->second.data());
-      }
-      for (int i=0; i<clientPoolSize_; ++i) {
-        SocketObjPtr conn(new SocketObj(clientConnectHost_, clientConnectPort_));
-        //只有server启动了,client的connect才会成功
-        if (conn->Connect()) {
-          char stringPort[10];
-          snprintf(stringPort, sizeof(stringPort), "%d", clientConnectPort_);
-          string key = clientConnectHost_ + "###" + stringPort;
-          client_map.insert(make_pair(key, conn));
-        } else {
-      	  strErrorMessage_ = conn->ErrorMessage();
-        }
-      }
-    }
-  }
-  */
 }
   
 ClientPool::~ClientPool() {
