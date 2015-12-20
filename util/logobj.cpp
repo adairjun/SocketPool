@@ -41,17 +41,20 @@ string LogObj::LogLevelConvert(LogObj::LogLevel eLevel) {
   return "";
 }
 
+/*
 LogObj::LogObj()
     : logName_("undefined_.log"),
-	  savePath_("../log") {
+	  savePath_("../log"),
+	  logLevel_(LogObj::NUM_LOG_LEVELS) {
 	//把当前的日期加入到日志的名字当中
 	logName_ += GetCurrentTime(0);
 	memset(buffer_, 0, 2048);
 }
 
-LogObj::LogObj(const string& logName, const string& savePath)
+LogObj::LogObj(const string& logName, const string& savePath, LogLevel logLevel)
     : logName_(logName),
-      savePath_(savePath) {
+      savePath_(savePath),
+	  logLevel_(logLevel) {
 	logName_ += GetCurrentTime(0);
 	memset(buffer_, 0, 2048);
 }
@@ -71,14 +74,16 @@ LogObj::LogObj(const char* FILE, int LINE, LogLevel logLevel)
 			FILE,
 			LINE);
 }
+*/
 
 LogObj::LogObj(const string& logName,
 		          const string& savePath,
+				  LogLevel logLevel,
 				  const char* FILE,
-				  int LINE,
-				  LogLevel logLevel)
+				  int LINE)
     : logName_(logName),
-      savePath_(savePath) {
+      savePath_(savePath),
+	  logLevel_(logLevel) {
 	logName_ += GetCurrentTime(0);
 	memset(buffer_, 0, 2048);
 	//获取到当前的时间，再把__FILE,__LINE__ 还有日志级别先写入到buffer_当中

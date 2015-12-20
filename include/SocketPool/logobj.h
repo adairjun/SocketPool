@@ -25,22 +25,19 @@ class LogObj {
   static string LogLevelConvert(LogLevel eLevel);
 
  public:
+  /*
   explicit LogObj();
   explicit LogObj(const string& logName, const string& savePath);
-
-  /*
-   * 这个构造函数的参数传递的是__FILE__,__LINE__这两个宏和日志级别
-   */
   explicit LogObj(const char* FILE, int LINE, LogLevel logLevel);
-
+*/
   /*
    * 在我的LOG宏当中选用的是这个构造函数，而其他三个构造函数就是在我最初写代码的时候用到的
    */
   explicit LogObj(const string& logName,
 		          const string& savePath,
+				  LogLevel logLevel,
 				  const char* FILE,
-				  int LINE,
-				  LogLevel logLevel);
+				  int LINE);
 
   LogObj(const LogObj&) = delete;
   LogObj& operator=(const LogObj&) = delete;
@@ -61,6 +58,9 @@ class LogObj {
 
   void SetSavePath(const string& savePath);
 
+  /*
+   * 获取当前时间的方法，传递0则出入年月日格式，其他值则输出年月日时分秒格式。
+   */
   string GetCurrentTime(int flag) const;
 
  public:
@@ -113,7 +113,7 @@ class LogObj {
 #define G_LOGNAME "undefined_.log"
 #define G_SAVEPATH "../log"
 
-#define LOG(level) LogObj(G_LOGNAME, G_SAVEPATH, __FILE__, __LINE__, LogObj::level)
+#define LOG(level) LogObj(G_LOGNAME, G_SAVEPATH, LogObj::level, __FILE__, __LINE__)
 
 /*
  * 使用方式:LOG(ERROR) << "this is error";
