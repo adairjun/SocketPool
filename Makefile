@@ -80,5 +80,5 @@ clean:
 	@echo "--------------------------make clean-----------------------"
 
 install:
-	cp -r ./include/DBPool /usr/local/include
+	cp -r ./include/SocketPool /usr/local/include
 	cp $(LIBRARY) $(SHARED) /usr/local/lib 
