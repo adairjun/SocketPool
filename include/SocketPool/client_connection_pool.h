@@ -3,7 +3,7 @@
 // Author: adairjun
 // This is used to construct a socket connection pool 
 
-#ifndef SOCLETPOOL_INCLUDE_SOCKET_CONNECTION_POOL_H
+#ifndef SOCKETPOOL_INCLUDE_SOCKET_CONNECTION_POOL_H
 #define SOCKETPOOL_INCLUDE _SOCKET_CONNECTION_POOL_H
 
 #include <string.h>
